@@ -6,7 +6,7 @@ generateTFPlot<-function(a,b,c,d,e,f){
   placed<-rep(f,5)
   datPlot<-data.frame(numService,nameService,placed)
   p<-ggplot(datPlot, aes(as.factor(nameService), numService)) 
-  p+ geom_boxplot(varwidth = TRUE, outlier.colour = "grey")+facet_grid(. ~ placed)
+  p+ geom_boxplot(varwidth = TRUE, outlier.colour = "grey",ylab="numServiceFamily")+facet_grid(. ~ placed)
 
 }
 
