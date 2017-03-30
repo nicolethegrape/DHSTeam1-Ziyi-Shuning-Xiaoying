@@ -2,7 +2,7 @@
 # this is a second way of calculating number of services
 
 rm(list = ls())
-setwd("~/Desktop/Capstone/DHSTeam1-Ziyi-Shuning-Xiaoying") # change to where you put DHSTeam1 folder
+setwd("~/Desktop/17 SPRING/Capstone /Homework10/DHSTeam1-Ziyi-Shuning-Xiaoying") # change to where you put DHSTeam1 folder
 
 library(readxl)
 dat1 <- read_excel("Data/DHS_Case_Clients_2016EntryCohort.xlsx", 
