@@ -1,3 +1,6 @@
+# since 0.5 service per person does not make sense,
+# this is a second way of calculating number of services
+
 rm(list = ls())
 setwd("~/Desktop/Capstone/DHSTeam1-Ziyi-Shuning-Xiaoying") # change to where you put DHSTeam1 folder
 
@@ -23,26 +26,20 @@ placeDataNew <- placeData %>%
   mutate(isPlacedFromAny= isPlacedFromAcceptReason | isPlacedFromCrossSystem)
 table(placeDataNew$isPlacedFromAny)
 
-source("Functions/GetNumberOfServices.R")
-serviceDataNew <- calAverNumServiceFamily(mergedData)
+source("Functions/GetNumberOfServices2.R")
+serviceDataNew2 <- calAverNumServiceFamily(mergedData)
 
 source("Functions/MergeServiceAndPlacement.R")
-finalData <- getFinalData(placeDataNew, serviceDataNew)
+finalData <- getFinalData(placeDataNew, serviceDataNew2)
 
 source("Graph/Boxplot.R")
 library(ggplot2)
-generateBoxPlot(finalData, "averNumServiceFamily", "Number of Services and Child Placement")
-g1 <- generateBoxPlot(finalData, "averNumHousingFamily", "Number of Housing Service Per Person and Child Placement")
-g2 <- generateBoxPlot(finalData, "averNumBehaviorFamily", "Number of Behavior Service Per Person and Child Placement")
-g3 <- generateBoxPlot(finalData, "averNumNutritionFamily", "Number of Nutrition Service Per Person and Child Placement")
-g4 <- generateBoxPlot(finalData, "averNumMentalFamily", "Number of Mental Service Per Person and Child Placement")
+generateBoxPlot(finalData, "KindServiceFamily", "Number of Service Kinds and Child Placement")
+g1 <- generateBoxPlot(finalData, "NumHousingFamily", "Number of Housing Service and Child Placement")
+g2 <- generateBoxPlot(finalData, "NumBehaviorFamily", "Number of Behavior Service and Child Placement")
+g3 <- generateBoxPlot(finalData, "NumNutritionFamily", "Number of Nutrition Service and Child Placement")
+g4 <- generateBoxPlot(finalData, "NumMentalFamily", "Number of Mental Service and Child Placement")
 
 source("Graph/Multiplot.R")
 multiplot(g1, g2, g3, g4, cols=2)
-
-
-
-
-
-
 
