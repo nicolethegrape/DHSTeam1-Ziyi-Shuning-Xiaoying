@@ -43,3 +43,5 @@ g4 <- generateBoxPlot(finalData, "NumMentalFamily", "Number of Mental Service an
 source("Graph/Multiplot.R")
 multiplot(g1, g2, g3, g4, cols=2)
 
+source("Graph/TFplot.R")
+generateTFPlot(finalData$KindServiceFamily,finalData$NumHousingFamily,finalData$NumBehaviorFamily,finalData$NumNutritionFamily,finalData$NumMentalFamily,finalData$placement)
