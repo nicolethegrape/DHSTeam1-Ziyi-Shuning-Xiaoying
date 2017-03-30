@@ -1,5 +1,5 @@
 rm(list = ls())
-setwd("~/Desktop/Capstone/DHSTeam1-Ziyi-Shuning-Xiaoying") # change to where you put DHSTeam1 folder
+setwd("~/Desktop/2017Spring/R/DHSTeam1") # change to where you put DHSTeam1 folder
 
 library(readxl)
 dat1 <- read_excel("Data/DHS_Case_Clients_2016EntryCohort.xlsx", 
@@ -40,8 +40,8 @@ g4 <- generateBoxPlot(finalData, "averNumMentalFamily", "Number of Mental Servic
 source("Graph/Multiplot.R")
 multiplot(g1, g2, g3, g4, cols=2)
 
-
-
+source("Graph/TFplot.R")
+generateTFPlot(finalData$averNumServiceFamily,finalData$averNumHousingFamily,finalData$averNumBehaviorFamily,finalData$averNumNutritionFamily,finalData$averNumMentalFamily,finalData$placement)
 
 
 
