@@ -3,6 +3,19 @@
 # nutrition: DPW_FS
 # mental health: MH, ID
 
+# Definition 2:
+# CASE_ID	CLIENT_ID	ACHA_MIN	ACHA_MAX	HACP_MIN	HACP_MAX
+#  29003	720332	  AUG-2005	JAN-2011	NA	      NA
+#  29003	720341	  NOV-2007	JAN-2011	NA	      NA
+#  29003	759849	  NA	      NA	      AUG-2005	JAN-2011
+#  29003	912237	  NA	      NA	      NOV-2007	JAN-2011
+# The number of ACHA service received in one family:
+# If any of family members receive ACHA service, the number of ACHA service for this family is 1. (Because they are family members, how come some of them receive housing service, while others do not benefit from it?)
+# Here the number of ACHA service for case 29003 is 1.
+#	The number of types of services received in one family:
+# 1 (ACHA and HACP both belongs to housing type) for case 29003.
+
+# calculate num of services for each family
 calNumService <- function(x){
   rows <- dim(x)[1]
   cols <- dim(x)[2]

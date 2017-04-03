@@ -3,6 +3,19 @@
 # nutrition: DPW_FS
 # mental health: MH, ID
 
+# Definition 1:
+# CASE_ID	CLIENT_ID	ACHA_MIN	ACHA_MAX	HACP_MIN	HACP_MAX
+#  29003	720332	  AUG-2005	JAN-2011	NA	      NA
+#  29003	720341	  NOV-2007	JAN-2011	NA	      NA
+#  29003	759849	  NA	      NA	      AUG-2005	JAN-2011
+#  29003	912237	  NA	      NA	      NOV-2007	JAN-2011
+#	The average number of ACHA service received per person in one family:
+# 2 ACHA services / 4 members total = 0.5 ACHA service per person for case 29003.
+
+#	The average number of housing services (ACHA + HACP, just for here) received per person in one family:
+# (2 ACHA services + 2 HACP services) / 4 members total = 1 housing service per person for case 29003.
+
+
 # calculate num of services for each person
 calNumServicePerson <- function(x){
   l <- length(x)
@@ -15,7 +28,7 @@ calNumServicePerson <- function(x){
   return(num)
 }
 
-# calculate average num of services for each family
+# calculate the average num of services per person for each family
 calAverNumServiceFamily <- function(mergedData){
   serviceData <- mergedData %>%
     select(CLIENT_ID, CASE_ID, ACHA_MIN_ACTIVE, ACHA_MAX_ACTIVE, 
