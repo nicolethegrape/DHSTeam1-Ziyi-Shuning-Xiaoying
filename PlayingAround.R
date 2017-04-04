@@ -1,5 +1,5 @@
 
-# example
+### example
 install.packages("reshape")
 library(reshape)
 library(ggplot2)
@@ -23,7 +23,12 @@ ggplot(mdfr, aes(time,name)) +
   scale_x_datetime(breaks=date_breaks("2 sec"),
                    limits = as.POSIXct(c('2014-08-07 09:03:24','2014-08-07 09:03:29')))
 
-# my own effort
+
+
+
+
+### my own effort
+
 rm(list = ls())
 library(readxl)
 library(reshape)
@@ -31,18 +36,50 @@ library(ggplot2)
 library(dplyr)
 library(scales)
 setwd("~/Desktop/Capstone/DHSTeam1-Ziyi-Shuning-Xiaoying") # change to where you put DHSTeam1 folder
+dat1 <- read_excel("Data/DHS_Case_Clients_2016EntryCohort.xlsx", 
+                   sheet = "DHS_Case_Clients_2016EntryCohor") # 16639 obs
 dat2 <- read_excel("Data/DHS_CrossSystem.xlsx",
                    sheet = "SystemInvolvement_EC2016") # 8206 obs
-dat <- filter(dat2, CLIENT_ID == 688929 | CLIENT_ID == 688932
-              | CLIENT_ID == 688934 | CLIENT_ID == 688935
-              | CLIENT_ID == 688936 | CLIENT_ID == 688937)
-datclean <- dat[, colSums(is.na(dat)) == 0]
+
+source("Functions/GetPlacementFromACCEPT_REASON.R")
+mergedData <- mergeData(dat1, dat2)
+
+serviceData <- mergedData %>%
+  select(CLIENT_ID, CASE_ID, ACHA_MIN_ACTIVE, ACHA_MAX_ACTIVE, 
+         DA_MIN_ACTIVE, DA_MAX_ACTIVE, DPW_FS_MIN_ACTIVE, DPW_FS_MAX_ACTIVE, 
+         MH_MIN_ACTIVE, MH_MAX_ACTIVE) 
+
+for (i in 3:(length(serviceData))){
+  serviceData[,i] <- paste0("01-", serviceData[,i])
+  serviceData[,i] <- as.Date(serviceData[,i], "%d-%B-%Y")
+}
+
+serviceDataNew <- serviceData %>%
+  group_by(CASE_ID) %>%
+  summarise(ACHA_MIN = as.POSIXct(min(ACHA_MIN_ACTIVE, na.rm = TRUE)),
+            ACHA_MAX = as.POSIXct(max(ACHA_MAX_ACTIVE, na.rm = TRUE)),
+            DA_MIN = as.POSIXct(min(DA_MIN_ACTIVE, na.rm = TRUE)),
+            DA_MAX = as.POSIXct(max(DA_MAX_ACTIVE, na.rm = TRUE)),
+            DPW_FS_MIN = as.POSIXct(min(DPW_FS_MIN_ACTIVE, na.rm = TRUE)),
+            DPW_FS_MAX = as.POSIXct(max(DPW_FS_MAX_ACTIVE, na.rm = TRUE)),
+            MH_MIN = as.POSIXct(min(MH_MIN_ACTIVE, na.rm = TRUE)),
+            MH_MAX = as.POSIXct(max(MH_MAX_ACTIVE, na.rm = TRUE)))
+serviceDataNew <- data.frame(serviceDataNew)
+dat <- melt(serviceDataNew, measure.vars = names(serviceDataNew)[-1])
+#####
 datclean <- data.frame(datclean)
 mdatclean <- melt(datclean, measure.vars = names(datclean)[-1])
 mdatclean$value <- paste0("01-", mdatclean$value)
 mdatclean$value <- as.Date(mdatclean$value, "%d-%B-%Y")
 mdatclean$time <- as.POSIXct(mdatclean$value)
 mdat <- mdatclean
+
+dates <- c(as.Date(NA, "%d-%B-%Y"), as.Date(NA, "%d-%B-%Y"), 
+           as.Date("01-AUG-2011", "%d-%B-%Y"), 
+           as.Date("02-AUG-2011", "%d-%B-%Y"), 
+           as.Date("01-JUL-2011", "%d-%B-%Y"))
+min(dates, na.rm = TRUE)
+#####
 
 idxMin <- regexpr("MIN_ACTIVE", mdat$variable) 
 idxMax <- regexpr("MAX_ACTIVE", mdat$variable) 
@@ -68,7 +105,7 @@ mins <- rep("min", dim(mdat)[1])
 mdat <- data.frame(mdat, minOrMax = mins, stringsAsFactors=FALSE)
 mdat$minOrMax[maxIdx] <- "max"
 
-ggplot(mdat, aes(time,serviceName)) + 
+ggplot(mdat, aes(time,serviceName, col = serviceName)) + 
   geom_line(size = 2) +
   xlab("") + ylab("") +
   theme_bw()+

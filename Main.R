@@ -43,6 +43,6 @@ multiplot(g1, g2, g3, g4, cols=2)
 source("Graph/TFplot.R")
 generateTFPlot(finalData$averNumServiceFamily,finalData$averNumHousingFamily,finalData$averNumBehaviorFamily,finalData$averNumNutritionFamily,finalData$averNumMentalFamily,finalData$placement)
 
-
+generateKernelDensity(finalData)
 
 
