@@ -33,14 +33,16 @@ library(scales)
 setwd("~/Desktop/Capstone/DHSTeam1-Ziyi-Shuning-Xiaoying") # change to where you put DHSTeam1 folder
 dat2 <- read_excel("Data/DHS_CrossSystem.xlsx",
                    sheet = "SystemInvolvement_EC2016") # 8206 obs
-dat688929 <- filter(dat2, CLIENT_ID == 688929)
-dat688929clean <- dat688929[, colSums(is.na(dat688929)) < nrow(dat688929)]
-dat688929clean <- data.frame(dat688929clean)
-mdat688929clean <- melt(dat688929clean, measure.vars = names(dat688929clean)[-1])
-mdat688929clean$value <- paste0("01-", mdat688929clean$value)
-mdat688929clean$value <- as.Date(mdat688929clean$value, "%d-%B-%Y")
-mdat688929clean$time <- as.POSIXct(mdat688929clean$value)
-mdat <- mdat688929clean
+dat <- filter(dat2, CLIENT_ID == 688929 | CLIENT_ID == 688932
+              | CLIENT_ID == 688934 | CLIENT_ID == 688935
+              | CLIENT_ID == 688936 | CLIENT_ID == 688937)
+datclean <- dat[, colSums(is.na(dat)) == 0]
+datclean <- data.frame(datclean)
+mdatclean <- melt(datclean, measure.vars = names(datclean)[-1])
+mdatclean$value <- paste0("01-", mdatclean$value)
+mdatclean$value <- as.Date(mdatclean$value, "%d-%B-%Y")
+mdatclean$time <- as.POSIXct(mdatclean$value)
+mdat <- mdatclean
 
 idxMin <- regexpr("MIN_ACTIVE", mdat$variable) 
 idxMax <- regexpr("MAX_ACTIVE", mdat$variable) 
@@ -71,4 +73,5 @@ ggplot(mdat, aes(time,serviceName)) +
   xlab("") + ylab("") +
   theme_bw()+
   scale_x_datetime(breaks=date_breaks("1 year"),
-                   limits = as.POSIXct(c('2002-06-30 20:00:00','2017-01-31 19:00:00')))
+                   limits = as.POSIXct(c('2002-06-30 20:00:00','2017-01-31 19:00:00'))) +
+  facet_grid(CLIENT_ID~.)

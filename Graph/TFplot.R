@@ -10,8 +10,6 @@ generateTFPlot<-function(a,b,c,d,e,f){
   facet_grid(.~placed)+
   ylab("numServiceFamily")+
   ggtitle("Number of Services and Children Placement Comparison Graph")
- 
-
 }
 
 
