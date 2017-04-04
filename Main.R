@@ -1,5 +1,5 @@
 rm(list = ls())
-setwd("~/Desktop/2017Spring/R/DHSTeam1") # change to where you put DHSTeam1 folder
+setwd("~/Desktop/Capstone/DHSTeam1-Ziyi-Shuning-Xiaoying") # change to where you put DHSTeam1 folder
 
 library(readxl)
 dat1 <- read_excel("Data/DHS_Case_Clients_2016EntryCohort.xlsx", 
@@ -23,7 +23,7 @@ placeDataNew <- placeData %>%
   mutate(isPlacedFromAny= isPlacedFromAcceptReason | isPlacedFromCrossSystem)
 table(placeDataNew$isPlacedFromAny)
 
-source("Functions/GetNumberOfServices.R")
+source("Functions/GetNumberOfServices1.R")
 serviceDataNew <- calAverNumServiceFamily(mergedData)
 
 source("Functions/MergeServiceAndPlacement.R")
