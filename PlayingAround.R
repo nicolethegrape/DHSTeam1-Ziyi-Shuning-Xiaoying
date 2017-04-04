@@ -81,8 +81,8 @@ dates <- c(as.Date(NA, "%d-%B-%Y"), as.Date(NA, "%d-%B-%Y"),
 min(dates, na.rm = TRUE)
 #####
 
-idxMin <- regexpr("MIN_ACTIVE", mdat$variable) 
-idxMax <- regexpr("MAX_ACTIVE", mdat$variable) 
+idxMin <- regexpr("MIN", dat$variable) 
+idxMax <- regexpr("MAX", dat$variable) 
 getLargerOnes <- function(a, b){
   print(paste0("Do they have same length? ", (length(a) == length(b))))
   result <- NULL
@@ -97,18 +97,18 @@ getLargerOnes <- function(a, b){
 }
 idx <- getLargerOnes(idxMin, idxMax)
 idx <- idx - 2
-serviceName <- substr(mdat$variable, 1, idx)
-mdat <- data.frame(mdat, serviceName = serviceName)
+serviceName <- substr(dat$variable, 1, idx)
+dat <- data.frame(dat, serviceName = serviceName)
 minIdx <- which(idxMin > 0)
 maxIdx <- which(idxMax > 0)
-mins <- rep("min", dim(mdat)[1])
-mdat <- data.frame(mdat, minOrMax = mins, stringsAsFactors=FALSE)
-mdat$minOrMax[maxIdx] <- "max"
+mins <- rep("min", dim(dat)[1])
+dat <- data.frame(dat, minOrMax = mins, stringsAsFactors=FALSE)
+dat$minOrMax[maxIdx] <- "max"
 
-ggplot(mdat, aes(time,serviceName, col = serviceName)) + 
+ggplot(dat[1:3098,], aes(value,serviceName, col = serviceName)) + 
   geom_line(size = 2) +
   xlab("") + ylab("") +
   theme_bw()+
   scale_x_datetime(breaks=date_breaks("1 year"),
                    limits = as.POSIXct(c('2002-06-30 20:00:00','2017-01-31 19:00:00'))) +
-  facet_grid(CLIENT_ID~.)
+  facet_grid(CASE_ID~.)
