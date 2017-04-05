@@ -1,6 +1,8 @@
+# get place data from ACCEPT_REASON in entryCorhort dataset
+
 library(dplyr)
-# get placement data
-getPlaceData <- function(mergedData){
+
+getPlaceFromACCEPT_REASON <- function(mergedData){
   placeData <- mergedData %>% 
     select(CLIENT_ID, CASE_ID, ACCEPT_REASON) %>% 
     mutate(isplaced=grepl("placed",ACCEPT_REASON)) %>% 
