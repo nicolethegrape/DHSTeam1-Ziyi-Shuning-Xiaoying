@@ -2,7 +2,7 @@
 # this is a second way of calculating number of services
 
 rm(list = ls())
-setwd("~/Desktop/17 SPRING/Capstone /Homework10/DHSTeam1-Ziyi-Shuning-Xiaoying") # change to where you put DHSTeam1 folder
+setwd("~/Desktop/2017Spring/R/DHSTeam1") # change to where you put DHSTeam1 folder
 
 library(readxl)
 dat1 <- read_excel("Data/DHS_Case_Clients_2016EntryCohort.xlsx", 
@@ -11,7 +11,9 @@ dat2 <- read_excel("Data/DHS_CrossSystem.xlsx",
                    sheet = "SystemInvolvement_EC2016") # 8206 obs
 source("Functions/MergeData.R")
 source("Functions/GetPlacementFromACCEPT_REASON.R")
+source("Functions/DateConvert.R")
 mergedData <- mergeData(dat1, dat2)
+dateConvert<-convertDate(mergedData)
 placeData <- getPlaceData(mergedData)
 
 source("Functions/GetPlacementFromCrossSystem.R")
