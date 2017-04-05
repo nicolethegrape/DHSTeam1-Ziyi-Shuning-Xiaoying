@@ -48,5 +48,32 @@ calConcurrentForClient <- function(newMergedData, concurrencyDataFrame){
 # determine concurrent services with CYF service for each family
 # ? divided by the number of family members / divided by the total number of services
 
+library(dplyr)
+#function: calculate the ratio of concurrent services
+calRatioofConcurrent<-function(service) {
+  numofzero<-length(which(service==0))
+  numofpeople<-length(service)
+  ratio<-numofzero/numofpeople
+  return(ratio)
+}
 
+#get the final dataframe
+ConcurrencyRatioData<-function(ConcurrencyData) {
+  ConcurrecyRatioData<-ConcurrencyData %>%
+    group_by(Case_ID) %>%
+    summarise_each(funs(calRatioofConcurrent),ACHA:ID)
+}
+
+#THIS IS JUST FOR TEST
+###########
+# CLIENT_ID<-c(1234:1241)
+# Case_ID<-c(1,1,1,1,2,2,2,2)
+# ACHA<-c(1,0,0,1,0,0,1,-1)
+# Mental<-c(1,0,0,-1,0,0,0,1)
+# ID<-c(1,0,0,-1,1,1,-1,0)
+# tempdata<-data.frame(CLIENT_ID,Case_ID,ACHA,Mental,ID)
+# tempdatanew<-ConcurrencyRatioData(tempdata)
+
+#Ziyi's commment
+#不知道dplry包能不能定位第几列（就像[,10]这种），现在只能根据names来
 
