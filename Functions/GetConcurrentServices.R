@@ -1,6 +1,13 @@
 # change all date values into meaningful date values
-mergedData
+library(zoo)
 # CLIENT_ID CASE_ID
+convertDate<-function(mergedData){
+  DateDat<-mergedData
+  for(i in c(3,5:46)){
+    DateDat[,i]<-as.Date(as.yearmon(DateDat[,i],"%b-%Y"))
+  }
+  return(DateDat)
+}
 
 
 # determine concurrent (ACHA, DA...) services with CYF service for each individual
@@ -11,7 +18,7 @@ mergedData
 # 688930      25532     -1
 # 688931      25532     1
 
-calConcurrentForClient <- function(newMergedData, concurrencyDataFrame){
+calConcurrentForClient <- function(newMergedData){
   rows <- dim(newMergedData)[1]
   cols <- dim(newMergedData)[2]
   
@@ -25,19 +32,25 @@ calConcurrentForClient <- function(newMergedData, concurrencyDataFrame){
   for (i in 1:rows){
     client_id = newMergedData[i, 1]
     case_id = newMergedData[i, 2]
-    S <-  as.POSIXct('2002-06-30 20:00:00') # newMergedData[i, 3]
-    E <-  as.POSIXct('2002-06-30 20:00:00') # newMergedData[i, 4]
+    S <- newMergedData[i, 3]
+    E <- newMergedData[i, 4]
     concurrencyVector <- c(client_id, case_id)
-    for (j in 5:cols - 1){
-      MIN <-  as.POSIXct('2002-05-30 20:00:00') # newMergedData[i, j]
-      MAX <-  as.POSIXct('2002-05-30 20:00:00') # newMergedData[i, j + 1]
-      concurrency <- 0
-      if (MAX < S){
-        concurrency <- -1
-      } else if (MIN < E){
-        concurrency <- 1
+    for (j in seq(5,cols - 1,by = 2)){
+      MIN <- newMergedData[i, j]
+      MAX <- newMergedData[i, j + 1]
+      concurrency <- NA
+      
+      if (!is.na(MIN) & !is.na(MAX)){
+        if (MAX < S){
+          concurrency <- -1
+        } else if (MIN > E){
+          concurrency <- 1
+        } else {
+          concurrency <- 0
+        }
       }
-      concurrencyVector <- c(concurrencyVector, concurrency)
+      
+      concurrencyVector[length(concurrencyVector) + 1] <- concurrency
     }
     concurrencyDataFrame[nrow(concurrencyDataFrame)+1,] <- concurrencyVector
   }
@@ -59,8 +72,8 @@ calRatioofConcurrent<-function(service) {
 
 #get the final dataframe
 ConcurrencyRatioData<-function(ConcurrencyData) {
-  ConcurrecyRatioData<-ConcurrencyData %>%
-    group_by(Case_ID) %>%
+  ConcurrecyRatioData <- ConcurrencyData %>%
+    group_by(CASE_ID) %>%
     summarise_each(funs(calRatioofConcurrent),ACHA:ID)
 }
 
