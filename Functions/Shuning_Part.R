@@ -1,8 +1,3 @@
-# change all date values into meaningful date values
-mergedData
-# CLIENT_ID CASE_ID
-
-
 # determine concurrent (ACHA, DA...) services with CYF service for each individual
 # ? the definition of concurrent
 # the result should be:
@@ -11,11 +6,6 @@ mergedData
 # 688930      25532     -1
 # 688931      25532     1
 
-
-
-
-# determine concurrent services with CYF service for each family
-# ? divided by the number of family members / divided by the total number of services
-
-
-
+calConcurrentForClient <- function(newMergedData){
+  
+}
