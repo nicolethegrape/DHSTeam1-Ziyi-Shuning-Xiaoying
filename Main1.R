@@ -8,7 +8,7 @@ dat2 <- read_excel("Data/DHS_CrossSystem.xlsx",
 
 source("Functions/MergeData.R")
 mergedData <- mergeData(dat1, dat2)
-# write.csv(mergedData, "Data/MergedData.csv")
+# write.csv(mergedData, "Data/MergedData.csv", row.names=FALSE)
 
 
 
@@ -29,14 +29,14 @@ placeData <- mergePlace(placeData1, placeData2)
 # check final place data
 table(placeData$isPlacedFromAny)
 # export
-# write.csv(placeData, "Data/Placement.csv")
+# write.csv(placeData, "Data/Placement.csv", row.names=FALSE)
 
 
 
 source("Functions/CalAverNumServiceFamily.R")
 serviceData <- calAverNumServiceFamily(mergedData)
 # export
-# write.csv(serviceData, "Data/AverNumService.csv")
+# write.csv(serviceData, "Data/AverNumService.csv", row.names=FALSE)
 
 
 

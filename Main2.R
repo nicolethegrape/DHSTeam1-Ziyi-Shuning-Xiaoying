@@ -11,7 +11,7 @@ placeData <- read.csv("Data/Placement.csv")
 source("Functions/CalNumServiceFamily.R")
 serviceData <- calNumServiceFamily(mergedData)
 # export
-# write.csv(serviceData, "Data/NumService.csv")
+# write.csv(serviceData, "Data/NumService.csv", row.names=FALSE)
 
 
 source("Functions/MergePlaceAndService.R")
