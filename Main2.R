@@ -1,41 +1,25 @@
-# since 0.5 service per person does not make sense,
-# this is a second way of calculating number of services
-
+setwd("~/Desktop/Capstone/DHSTeam1-Ziyi-Shuning-Xiaoying") # change to where you put DHSTeam1 folder
 rm(list = ls())
-setwd("~/Desktop/2017Spring/R/DHSTeam1") # change to where you put DHSTeam1 folder
 
-library(readxl)
-dat1 <- read_excel("Data/DHS_Case_Clients_2016EntryCohort.xlsx", 
-                   sheet = "DHS_Case_Clients_2016EntryCohor") # 16639 obs
-dat2 <- read_excel("Data/DHS_CrossSystem.xlsx",
-                   sheet = "SystemInvolvement_EC2016") # 8206 obs
-source("Functions/MergeData.R")
-source("Functions/GetPlacementFromACCEPT_REASON.R")
-source("Functions/DateConvert.R")
-mergedData <- mergeData(dat1, dat2)
-dateConvert<-convertDate(mergedData)
-placeData <- getPlaceData(mergedData)
+mergedData <- read.csv("Data/MergedData.csv")
 
-source("Functions/GetPlacementFromCrossSystem.R")
-placeData2 <- getPlaceData2(mergedData)
-all(placeData$CASE_ID == placeData2$CASE_ID) # TRUE
-table(placeData$isPlacedFromAcceptReason) # from ACCEPT_REASON
-table(placeData2$isPlacedFromCrossSystem) # from CrossSystem
 
-# make placement TRUE if either of them TRUE
-placeDataNew <- placeData %>%
-  mutate(isPlacedFromCrossSystem = placeData2$isPlacedFromCrossSystem) %>%
-  mutate(isPlacedFromAny= isPlacedFromAcceptReason | isPlacedFromCrossSystem)
-table(placeDataNew$isPlacedFromAny)
+placeData <- read.csv("Data/Placement.csv")
 
-source("Functions/GetNumberOfServices2.R")
-serviceDataNew2 <- calAverNumServiceFamily(mergedData)
 
-source("Functions/MergeServiceAndPlacement.R")
-finalData <- getFinalData(placeDataNew, serviceDataNew2)
 
-source("Graph/Boxplot.R")
+source("Functions/CalNumServiceFamily.R")
+serviceData <- calNumServiceFamily(mergedData)
+# export
+# write.csv(serviceData, "Data/NumService.csv")
+
+
+source("Functions/MergePlaceAndService.R")
+finalData <- mergePlaceAndService(placeData, serviceData)
+
+
 library(ggplot2)
+source("Graph/Boxplot.R")
 generateBoxPlot(finalData, "KindServiceFamily", "Number of Service Kinds and Child Placement")
 g1 <- generateBoxPlot(finalData, "NumHousingFamily", "Number of Housing Service and Child Placement")
 g2 <- generateBoxPlot(finalData, "NumBehaviorFamily", "Number of Behavior Service and Child Placement")
@@ -47,8 +31,9 @@ multiplot(g1, g2, g3, g4, cols=2)
 
 source("Graph/TFplot.R")
 generateTFPlot(finalData$KindServiceFamily,finalData$NumHousingFamily,finalData$NumBehaviorFamily,finalData$NumNutritionFamily,finalData$NumMentalFamily,finalData$placement)     
-               
-generateKernelDensity(finalData)               
+  
+source("Graph/KernelDensityPlot.R")             
+generateKernelDensity(finalData, "KindServiceFamily")               
                
                
                

@@ -66,12 +66,12 @@ calKindService <- function(x){
   return(kind)
 }
 
-# calculate average num of services for each family
-calAverNumServiceFamily <- function(mergedData){
+# calculate num of services for each family
+calNumServiceFamily <- function(mergedData){
   serviceData <- select(mergedData, CLIENT_ID, CASE_ID, ACHA_MIN_ACTIVE, ACHA_MAX_ACTIVE, 
-           HACP_MIN_ACTIVE, HACP_MAX_ACTIVE, HH_MIN_ACTIVE, HH_MAX_ACTIVE, 
-           DA_MIN_ACTIVE, DA_MAX_ACTIVE, DPW_FS_MIN_ACTIVE, DPW_FS_MAX_ACTIVE, 
-           MH_MIN_ACTIVE, MH_MAX_ACTIVE, ID_MIN_ACTIVE, ID_MAX_ACTIVE) 
+                        HACP_MIN_ACTIVE, HACP_MAX_ACTIVE, HH_MIN_ACTIVE, HH_MAX_ACTIVE, 
+                        DA_MIN_ACTIVE, DA_MAX_ACTIVE, DPW_FS_MIN_ACTIVE, DPW_FS_MAX_ACTIVE, 
+                        MH_MIN_ACTIVE, MH_MAX_ACTIVE, ID_MIN_ACTIVE, ID_MAX_ACTIVE) 
   KindServiceFamily <- as.numeric(by(serviceData[, 3:16], serviceData$CASE_ID, calKindService))
   NumHousingFamily <- as.numeric(by(serviceData[,3:8], serviceData$CASE_ID, calNumService))
   NumBehaviorFamily <- as.numeric(by(serviceData[,9:10], serviceData$CASE_ID, calNumService))

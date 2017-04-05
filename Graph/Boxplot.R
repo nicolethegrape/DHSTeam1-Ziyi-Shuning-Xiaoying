@@ -1,5 +1,5 @@
-generateBoxPlot <- function(finalData, yDataName, title){
-  ggplot(data=finalData, aes_string(x = "placement", y = yDataName)) + 
+generateBoxPlot <- function(finalData, yVarName, title){
+  ggplot(data=finalData, aes_string(x = "placement", y = yVarName)) + 
     geom_boxplot() +
     ggtitle(title)
 }

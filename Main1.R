@@ -1,36 +1,51 @@
-rm(list = ls())
 setwd("~/Desktop/Capstone/DHSTeam1-Ziyi-Shuning-Xiaoying") # change to where you put DHSTeam1 folder
-
+rm(list = ls())
 library(readxl)
 dat1 <- read_excel("Data/DHS_Case_Clients_2016EntryCohort.xlsx", 
                    sheet = "DHS_Case_Clients_2016EntryCohor") # 16639 obs
 dat2 <- read_excel("Data/DHS_CrossSystem.xlsx",
                    sheet = "SystemInvolvement_EC2016") # 8206 obs
-source("Functions/MergeData.R")
-source("Functions/GetPlacementFromACCEPT_REASON.R")
-mergedData <- mergeData(dat1, dat2)
-placeData <- getPlaceData(mergedData)
 
-source("Functions/GetPlacementFromCrossSystem.R")
-placeData2 <- getPlaceData2(mergedData)
-all(placeData$CASE_ID == placeData2$CASE_ID) # TRUE
-table(placeData$isPlacedFromAcceptReason) # from ACCEPT_REASON
+source("Functions/MergeData.R")
+mergedData <- mergeData(dat1, dat2)
+# write.csv(mergedData, "Data/MergedData.csv")
+
+
+
+source("Functions/GetPlaceFromACCEPT_REASON.R")
+placeData1 <- getPlaceFromACCEPT_REASON(mergedData)
+
+source("Functions/GetPlaceFromCrossSystem.R")
+placeData2 <- getPlaceFromCrossSystem(mergedData)
+
+# check two place data
+all(placeData1$CASE_ID == placeData2$CASE_ID) # TRUE
+table(placeData1$isPlacedFromAcceptReason) # from ACCEPT_REASON
 table(placeData2$isPlacedFromCrossSystem) # from CrossSystem
 
-# make placement TRUE if either of them TRUE
-placeDataNew <- placeData %>%
-  mutate(isPlacedFromCrossSystem = placeData2$isPlacedFromCrossSystem) %>%
-  mutate(isPlacedFromAny= isPlacedFromAcceptReason | isPlacedFromCrossSystem)
-table(placeDataNew$isPlacedFromAny)
+source("Functions/MergePlace.R")
+placeData <- mergePlace(placeData1, placeData2)
 
-source("Functions/GetNumberOfServices1.R")
-serviceDataNew <- calAverNumServiceFamily(mergedData)
+# check final place data
+table(placeData$isPlacedFromAny)
+# export
+# write.csv(placeData, "Data/Placement.csv")
 
-source("Functions/MergeServiceAndPlacement.R")
-finalData <- getFinalData(placeDataNew, serviceDataNew)
 
-source("Graph/Boxplot.R")
+
+source("Functions/CalAverNumServiceFamily.R")
+serviceData <- calAverNumServiceFamily(mergedData)
+# export
+# write.csv(serviceData, "Data/AverNumService.csv")
+
+
+
+source("Functions/MergePlaceAndService.R")
+finalData <- mergePlaceAndService(placeData, serviceData)
+
+
 library(ggplot2)
+source("Graph/Boxplot.R")
 generateBoxPlot(finalData, "averNumServiceFamily", "Number of Services and Child Placement")
 g1 <- generateBoxPlot(finalData, "averNumHousingFamily", "Number of Housing Service Per Person and Child Placement")
 g2 <- generateBoxPlot(finalData, "averNumBehaviorFamily", "Number of Behavior Service Per Person and Child Placement")
@@ -43,6 +58,7 @@ multiplot(g1, g2, g3, g4, cols=2)
 source("Graph/TFplot.R")
 generateTFPlot(finalData$averNumServiceFamily,finalData$averNumHousingFamily,finalData$averNumBehaviorFamily,finalData$averNumNutritionFamily,finalData$averNumMentalFamily,finalData$placement)
 
-generateKernelDensity(finalData)
+source("Graph/KernelDensityPlot.R")
+generateKernelDensity(finalData, "averNumServiceFamily")
 
 

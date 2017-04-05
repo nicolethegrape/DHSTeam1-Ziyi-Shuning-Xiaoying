@@ -1,20 +1,26 @@
+setwd("~/Desktop/Capstone/DHSTeam1-Ziyi-Shuning-Xiaoying") # change to where you put DHSTeam1 folder
 rm(list = ls())
-setwd("~/Desktop/2017Spring/R/DHSTeam1") # change to where you put DHSTeam1 folder
+library(zoo)
 
-library(readxl)
-dat1 <- read_excel("Data/DHS_Case_Clients_2016EntryCohort.xlsx", 
-                   sheet = "DHS_Case_Clients_2016EntryCohor") # 16639 obs
-dat2 <- read_excel("Data/DHS_CrossSystem.xlsx",
-                   sheet = "SystemInvolvement_EC2016") # 8206 obs
+mergedData <- read.csv("Data/MergedData.csv")
 
-source("Functions/MergeData.R")
-mergedData <- mergeData(dat1, dat2)
-source("Functions/GetConcurrentServices.R")
-newMergedData <- convertDate(mergedData)
-concurrencyDataFrame <- calConcurrentForClient(newMergedData)
-write.csv(concurrencyDataFrame, "Data/ConcurrencyDataFrame.xlsx")
 
-concurrencyRatio <- ConcurrencyRatioData(concurrencyDataFrame)
+placeData <- read.csv("Data/Placement.csv")
+
+
+source("Functions/KeepOnlyService.R")
+cleanedData <- keepOnlyService(mergedData)
+
+source("Functions/ConvertDate.R")
+convertedData <- convertDate(cleanedData)
+
+source("Functions/CalConcurrencyForClient.R")
+concurrency <- calConcurrencyForClient(convertedData[1:6, ])
+
+write.csv(concurrencyDataFrame, "Data/Concurrency.csv")
+
+source("Functions/CalConcurrencyRatio.R")
+concurrencyRatio <- calConcurrencyRatio(concurrency)
 
 source("Functions/GetPlacementFromACCEPT_REASON.R")
 placeData <- getPlaceData(mergedData)
