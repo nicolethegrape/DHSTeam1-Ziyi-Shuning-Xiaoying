@@ -1,10 +1,10 @@
 # Convert date in mergedDate into Date type.
 
-convertDate<-function(mergedDate){
+convertDate<-function(mergedData){
   require(zoo)
-  DateDat<-mergedDate
-  for(i in 1:18){
-    dat[,i]<-as.Date(as.yearmon(dat[,i],"%b-%Y"))
+  DateDat<-mergedData
+  for(i in c(3,5:46)){
+    DateDat[,i]<-as.Date(as.yearmon(DateDat[,i],"%b-%Y"))
   }
   return(DateDat)
 }
