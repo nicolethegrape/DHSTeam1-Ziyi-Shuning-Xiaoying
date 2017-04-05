@@ -12,5 +12,20 @@ mergedData <- mergeData(dat1, dat2)
 source("Functions/GetConcurrentServices.R")
 newMergedData <- convertDate(mergedData)
 concurrencyDataFrame <- calConcurrentForClient(newMergedData)
+write.csv(concurrencyDataFrame, "Data/ConcurrencyDataFrame.xlsx")
+
 concurrencyRatio <- ConcurrencyRatioData(concurrencyDataFrame)
 
+source("Functions/GetPlacementFromACCEPT_REASON.R")
+placeData <- getPlaceData(mergedData)
+source("Functions/GetPlacementFromCrossSystem.R")
+placeData2 <- getPlaceData2(mergedData)
+all(placeData$CASE_ID == placeData2$CASE_ID) # TRUE
+table(placeData$isPlacedFromAcceptReason) # from ACCEPT_REASON
+table(placeData2$isPlacedFromCrossSystem) # from CrossSystem
+
+# make placement TRUE if either of them TRUE
+placeDataNew <- placeData %>%
+  mutate(isPlacedFromCrossSystem = placeData2$isPlacedFromCrossSystem) %>%
+  mutate(isPlacedFromAny= isPlacedFromAcceptReason | isPlacedFromCrossSystem)
+table(placeDataNew$isPlacedFromAny)

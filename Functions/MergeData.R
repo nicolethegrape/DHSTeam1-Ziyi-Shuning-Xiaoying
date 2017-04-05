@@ -23,7 +23,6 @@ mergeData <- function(entrycohort, crosssystem){
   entrycohortUnique <- entrycohortUnique[,-c(14, 15)] #扔掉CLOSE_DT和CLOSE_REASON
   entrycohortUnique <- arrange(entrycohortUnique, CLIENT_ID)
   entrycohortUnique <- data.frame(entrycohortUnique, LAST_CLOSE_DT = lastClose)
-  entrycohortUnique <- entrycohortUnique[,c(-(3:7), -(9:13))]
   mergedData <- merge(x = entrycohortUnique, y = crosssystem, by = "CLIENT_ID") # inner join
   return(mergedData)
 }
