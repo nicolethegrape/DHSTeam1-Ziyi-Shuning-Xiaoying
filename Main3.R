@@ -33,5 +33,7 @@ finalData <- mergePlaceAndService(placeData, concurrencyRatio)
 library(ggplot2)
 source("Graph/KernelDensityPlot.R")
 generateKernelDensity(finalData, "ACHA")
-
+generateKernelDensity(finalData, "DA")
+generateKernelDensity(finalData, "DPW_FS")
+generateKernelDensity(finalData, "MH")
 
