@@ -14,7 +14,6 @@ calServiceBA <- function(newMergedData){
     client_id = newMergedData[i, 1]
     case_id = newMergedData[i, 2]
     A <- as.Date(newMergedData[i, 3])
-    E <- as.Date(newMergedData[i, 4])
     concurrencyVector <- c(client_id, case_id)
     for (j in seq(5,cols,by = 2)){
       MAX <- as.Date(newMergedData[i, j])
