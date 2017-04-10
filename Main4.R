@@ -17,26 +17,31 @@ library(zoo)
 
 serviceBAData <- read.csv("Data/ServiceBAData.csv")
 
-source("Functions/CalFamilyPreCYF.R")
-familyPreCYFData <- calFamilyPreCYF(serviceBAData)
+# source("Functions/CalFamilyPreCYF.R")
+# familyPreCYFData <- calFamilyPreCYF(serviceBAData)
+# 
+# source("Functions/AggrFamilyPreCYFCat.R")
+# familyPreCYFCatData <- aggrFamilyPreCYFCat(familyPreCYFData)
+# 
+# write.csv(familyPreCYFCatData, "Data/FamilyPreCYFCatData.csv", row.names=FALSE)
 
-source("Functions/AggrFamilyPreCYFCat.R")
-familyPreCYFCatData <- aggrFamilyPreCYFCat(familyPreCYFData)
+familyPreCYFCatData <- read.csv("Data/FamilyPreCYFCatData.csv")
 
-write.csv(familyPreCYFCatData, "Data/FamilyPreCYFCatData.csv", row.names=FALSE)
+# source("Functions/CalFamilyPlacePostCYF.R")
+# familyPlacePostCYFData <- calFamilyPlacePostCYF(serviceBAData)
+# 
+# write.csv(familyPlacePostCYFData, "Data/FamilyPlacePostCYFData.csv", row.names=FALSE)
 
-source("Functions/CalFamilyPlacePostCYF.R")
-familyPlacePostCYFData <- calFamilyPlacePostCYF(serviceBAData)
-
-write.csv(familyPlacePostCYFData, "Data/FamilyPlacePostCYFData.csv", row.names=FALSE)
+familyPlacePostCYFData <- read.csv("Data/FamilyPlacePostCYFData.csv")
 
 
 durationAndCloseTimes <- read.csv("Data/DurationAndCloseTimes.csv")
 
+
 source("Functions/MergeXYVars.R")
 familyFinalData <- mergeXYVars(familyPreCYFCatData, familyPlacePostCYFData, durationAndCloseTimes)
 
-write.csv(familyFinalData, "Data/FamilyFinalData.csv", row.names=FALSE)
+# write.csv(familyFinalData, "Data/FamilyFinalData.csv", row.names=FALSE)
 
 
 
