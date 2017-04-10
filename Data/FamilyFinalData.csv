@@ -1,4 +1,4 @@
-"CASE_ID","Placement","Housing","BasicNeeds","FSC","PlacementAsY","Duration","CloseTimes"
+"CASE_ID","Placement","Housing","BasicNeeds","FSC","PlacementAsY","CloseTimes","Duration"
 28892,TRUE,FALSE,FALSE,FALSE,FALSE,3,0
 28994,FALSE,TRUE,TRUE,TRUE,TRUE,2,92
 29003,TRUE,TRUE,TRUE,TRUE,FALSE,3,184
