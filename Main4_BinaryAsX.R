@@ -1,6 +1,6 @@
 setwd("~/Desktop/Capstone/DHSTeam1-Ziyi-Shuning-Xiaoying") # change to where you put DHSTeam1 folder
 rm(list = ls())
-
+library(dplyr)
 # mergedData <- read.csv("Data/MergedData.csv")
 # 
 # source("Functions/KeepOnlyService.R")
@@ -18,10 +18,10 @@ serviceBAData <- read.csv("Data/ServiceBAData.csv")
 
 # source("Functions/CalFamilyPreCYF.R")
 # familyPreCYFData <- calFamilyPreCYF(serviceBAData)
+# write.csv(familyPreCYFData, "Data/FamilyPreCYFData.csv", row.names=FALSE)
 # 
 # source("Functions/AggrFamilyPreCYFCat.R")
 # familyPreCYFCatData <- aggrFamilyPreCYFCat(familyPreCYFData)
-# 
 # write.csv(familyPreCYFCatData, "Data/FamilyPreCYFCatData.csv", row.names=FALSE)
 
 familyPreCYFCatData <- read.csv("Data/FamilyPreCYFCatData.csv")
