@@ -1,0 +1,7 @@
+serviceName,serviceStatus,percent
+Housing,TRUE,0.333
+Baisc Needs,TRUE,0.308
+FSC,TRUE,0.344
+Housing,FALSE,0.261
+Baisc Needs,FALSE,0.208
+FSC,FALSE,0.229
