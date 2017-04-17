@@ -112,3 +112,63 @@ ggplot(dat[1:3098,], aes(value,serviceName, col = serviceName)) +
   scale_x_datetime(breaks=date_breaks("1 year"),
                    limits = as.POSIXct(c('2002-06-30 20:00:00','2017-01-31 19:00:00'))) +
   facet_grid(CASE_ID~.)
+
+
+
+mergedDat <- read.csv("Data/MergedData.csv")
+selectDat <- mergedDat[mergedDat$CASE_ID == 37967 | mergedDat$CASE_ID == 59282,]
+
+mergedDat <- read.csv("Data/MergedData.csv")
+test <- mergedDat[mergedDat$CASE_ID %in% typeCounts[which(typeCounts$TypeCounts == 7 | typeCounts$TypeCounts == 8),1],]
+
+serviceBAData <- read.csv("Data/ServiceBAData.csv")
+library(dplyr)
+test2 <- serviceBAData %>%
+  select(CLIENT_ID, CASE_ID, MH) %>%
+  group_by(CASE_ID) %>%
+  summarise(MHpercent = length(which(MH != 0)) / n())
+
+
+# mean(mhpercent) = 0.4334491
+# mean(mhpercent) for families with 8 type counts = 
+# mean(mhpercent) for families with 7 type counts = 
+# mean(mhpercent) for families with 6 type counts = 
+0.53
+0.51
+0.57
+0.49
+0.51
+0.50
+0.46
+0.40
+0.29
+
+mean(test2$MHpercent)
+
+case_ids <- typeCounts[which(typeCounts$TypeCounts == 0), 1]
+mhs <- data.frame(test2[test2$CASE_ID %in% case_ids, 2])
+mean(mhs$MHpercent)
+
+finalDat <- read.csv("Data/FamilyFinalData.csv")
+typeCounts <- read.csv("Data/CompleteXYData.csv")
+
+install.packages("plotrix")
+install.packages("reshape")
+install.packages("data.table")
+install.packages("RColorBrewer")
+library(plotrix)
+library(reshape)
+library(data.table)
+library(RColorBrewer)
+
+x <- table(typeCounts$TypeCounts)
+piepercent <- round(100*x/sum(x), 1) 
+piepercent <-paste(piepercent, "%", sep = "")
+par(mfrow=c(1,1),mar=c(2,1.5,1,0.5),oma=c(2,1.5,1,0.5))
+pie(x, labels = piepercent, radius = 0.8,main="Pie Chart of Service Type Count", col=brewer.pal(9,"Blues"), clockwise = FALSE,
+    density = NULL, angle = 45, lty = NULL, border = NULL, edges = 200)
+legend("bottom", legend=c("0", "1", "2", "3", "4", "5", "6", "7", "8"), 
+       cex = 0.6, horiz = T, fill =brewer.pal(9,"Blues") )
+
+
+
