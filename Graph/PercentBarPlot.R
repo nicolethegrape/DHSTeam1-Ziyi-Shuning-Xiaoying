@@ -11,7 +11,7 @@ positions <- c("Housing", "Basic Needs", "FSC")
 ggplot(plotData,aes(y = percent2, ymax = max(percent2)*1.10, x = serviceName, fill = serviceStatus)) +
   geom_bar(stat = "identity",position = "dodge",alpha = 0.6, width = 0.5) +
   geom_text(aes(label = percent2), position = position_dodge(width=0.5), hjust=0.4, vjust=-0.5, fontface = "bold") + 
-  ylab("Percentage of Children Placed") +
+  ylab("% of Placement") +
   xlab("") +
   ggtitle("Services and Placement") +
   scale_fill_discrete(name="Service Status") +

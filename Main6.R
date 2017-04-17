@@ -8,15 +8,15 @@ genFourGroups <- function(x, y){
   groups <- NULL
   len <- length(x)
   for (i in 1:len){
-    group <- 0
+    group <- ""
     if (x[i] == FALSE & y[i] == FALSE){
-      group <- 1
+      group <- "No Housing, No Basic Needs"
     } else if (x[i] == TRUE & y[i] == FALSE){
-      group <- 2
+      group <- "Yes Housing, No Basic Needs"
     } else if(x[i] == FALSE & y[i] == TRUE){
-      group <- 3
+      group <- "No Housing, Yes Basic Needs"
     } else {
-      group <- 4
+      group <- "Yes Housing, Yes Basic Needs"
     }
     groups <- c(groups, group)
   }
@@ -29,5 +29,7 @@ test <- cbind.data.frame(finalDat, groups = groups)
 
 dat <- test %>%
   group_by(groups, FSC) %>%
-  
-  
+  summarise(percent = round(length(which(PlacementAsY == TRUE)) / n() * 100, 1))
+ 
+write.csv(dat, "Data/ConditionalData.csv", row.names = FALSE)
+
