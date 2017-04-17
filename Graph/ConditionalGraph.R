@@ -3,7 +3,7 @@ library(ggplot2)
 conditional<-ggplot(ConditionalData,aes(y=percent, x=groups, fill=FSC))
 
 conditional+geom_bar(stat = "identity",position = "dodge",alpha=0.6, width = 0.5)  +
-  geom_text(aes(label=percent), position=position_dodge(width=0.6), hjust=0.5, vjust=-1) + 
+  geom_text(aes(label=percent), position=position_dodge(width=0.6), hjust=0.5, vjust=-1, fontface="bold") + 
   scale_fill_discrete(name="Family Support Center Service") +
   scale_x_discrete(
     labels=function(x) {
