@@ -21,11 +21,20 @@ typeCountsFinalData <- read.csv("Data/TypeCountsFinalData.csv")
 
 # bar plot about types of services and placement
 library(ggplot2)
-ggplot(typeCountsFinalData, aes(TypeCounts, fill = PlacementAsY, order = -as.numeric(PlacementAsY))) + 
-  geom_bar(stat = "bin", position = "fill", alpha=0.6) + 
-  xlab("Types of Services") +
-  ylab("Place / Not Place Percentages") +
-  ggtitle("Types of Services and Placement")
+typeCountsFinalData$TypeCounts <- as.factor(typeCountsFinalData$TypeCounts)
+ggplot(typeCountsFinalData, aes(x = TypeCounts, fill = PlacementAsY, order = -as.numeric(PlacementAsY))) + 
+  geom_bar(stat = "bin", position = "fill", alpha=0.6, width = 0.5) + 
+  xlab("Number of Services") +
+  ylab("Percentages") +
+  ggtitle("Number of Services and Placement") + 
+  scale_fill_discrete(labels=c("No Placement", "Placement")) +
+  theme_bw() +
+  theme(axis.text=element_text(size=14,face="bold"),
+        axis.title=element_text(size=14,face="bold"),
+        plot.title = element_text(size = 22, face = "bold"),
+        legend.text=element_text(size=12,face="bold"),
+        legend.position = "top",
+        legend.title=element_blank())
 
 
 # bar plot about types of services and close times
