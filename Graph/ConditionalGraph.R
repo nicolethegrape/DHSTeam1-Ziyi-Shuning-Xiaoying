@@ -12,9 +12,11 @@ conditional+geom_bar(stat = "identity",position = "dodge",alpha=0.6, width = 0.5
   ylab("Percentage of Children Placed") +
   xlab("")+ 
   ggtitle("Services and Placement") +
+  theme_bw() +
   theme(axis.text=element_text(size=14,face="bold"),
         axis.title=element_text(size=14,face="bold"),
-        plot.title = element_text(size = 20, face = "bold"),
+        plot.title = element_text(size = 22, face = "bold"),
         legend.text=element_text(size=12,face="bold"),
-        legend.title=element_text(size=14,face="bold"))
+        legend.title=element_text(size=14,face="bold"),
+        legend.position = "top")
 
