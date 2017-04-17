@@ -1,9 +1,9 @@
 "groups","FSC","percent"
-1,FALSE,18.0428134556575
-1,TRUE,15
-2,FALSE,35
-2,TRUE,26.6666666666667
-3,FALSE,25.4854368932039
-3,TRUE,29.2452830188679
-4,FALSE,32.7777777777778
-4,TRUE,37.6068376068376
+"No Housing, No Basic Needs",FALSE,18
+"No Housing, No Basic Needs",TRUE,15
+"No Housing, Yes Basic Needs",FALSE,25.5
+"No Housing, Yes Basic Needs",TRUE,29.2
+"Yes Housing, No Basic Needs",FALSE,35
+"Yes Housing, No Basic Needs",TRUE,26.7
+"Yes Housing, Yes Basic Needs",FALSE,32.8
+"Yes Housing, Yes Basic Needs",TRUE,37.6
