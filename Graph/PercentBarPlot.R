@@ -8,7 +8,7 @@ plotData<-cbind(plotData,percent2)
 plotData$serviceName <- as.factor(plotData$serviceName)
 positions <- c("Housing", "Basic Needs", "FSC")
 
-ggplot(plotData,aes(y=percent2, ymax=max(percent2)*1.50, x=serviceName, fill=serviceStatus, labels = percent2)) +
+ggplot(plotData,aes(y = percent2, ymax = max(percent2)*1.10, x = serviceName, fill = serviceStatus)) +
   geom_bar(stat = "identity",position = "dodge",alpha = 0.6, width = 0.5) +
   geom_text(aes(label = percent2), position = position_dodge(width=0.5), hjust=0.4, vjust=-0.5, fontface = "bold") + 
   ylab("Percentage of Children Placed") +
@@ -23,4 +23,5 @@ ggplot(plotData,aes(y=percent2, ymax=max(percent2)*1.50, x=serviceName, fill=ser
         legend.text=element_text(size=12,face="bold"),
         legend.title=element_text(size=14,face="bold"),
         legend.position = "top")
+  
   
