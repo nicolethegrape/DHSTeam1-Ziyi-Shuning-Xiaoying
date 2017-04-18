@@ -36,6 +36,15 @@ ggplot(typeCountsFinalData, aes(x = TypeCounts, fill = PlacementAsY, order = -as
         legend.position = "top",
         legend.title=element_blank())
 
+typeCountsPercent <- typeCountsFinalData %>%
+  group_by(TypeCounts) %>%
+  summarise(PlacePercent = round(length(which(PlacementAsY == TRUE)) / n() * 100, 1))
+
+ggplot(typeCountsPercent, aes(x = TypeCounts, y = PlacePercent)) + 
+  geom_point()
+
+t.test(typeCountsPercent$PlacePercent~typeCountsPercent$TypeCounts)
+
 
 # bar plot about types of services and close times
 # change CloseTimes to factor format
@@ -53,7 +62,8 @@ ggplot(typeCountsFinalData, aes(TypeCounts, fill = CloseTimes, order = -as.numer
 typeCountsFinalData$TypeCounts <- as.factor(typeCountsFinalData$TypeCounts)
 
 ggplot(typeCountsFinalData, aes(TypeCounts, Duration)) + 
-  geom_boxplot()
+  geom_jitter() + 
+  geom_smooth(aes(group = 1),method = "lm")
 
 ggplot(typeCountsFinalData, aes(Duration, fill = TypeCounts)) + 
   geom_density(alpha=0.3)+
@@ -61,3 +71,4 @@ ggplot(typeCountsFinalData, aes(Duration, fill = TypeCounts)) +
   ggtitle("Types of Services and Duration")+
   theme_bw() +
   facet_wrap(~TypeCounts)
+

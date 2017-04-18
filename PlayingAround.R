@@ -126,7 +126,7 @@ library(dplyr)
 test2 <- serviceBAData %>%
   select(CLIENT_ID, CASE_ID, MH) %>%
   group_by(CASE_ID) %>%
-  summarise(MHpercent = length(which(MH != 0)) / n())
+  summarise(MHpercent = length(which(MH == -1)) / n())
 
 
 # mean(mhpercent) = 0.4334491
@@ -142,12 +142,30 @@ test2 <- serviceBAData %>%
 0.46
 0.40
 0.29
+typeCounts <- typeCountsFinalData
+calMeans <- function(test2, typeCounts){
+  means <- NULL
+  for (i in 0:8){
+    case_ids <- typeCounts[which(typeCounts$TypeCounts == i), 1]
+    mhs <- data.frame(test2[test2$CASE_ID %in% case_ids, 2])
+    means <- c(means, round(mean(mhs$MHpercent) * 100, 1))
+  }
+  return(means)
+}
+means <- calMeans(test2, typeCounts)
+counts <- seq(0:8) - 1
+meandf <- cbind.data.frame(counts, means)
 
-mean(test2$MHpercent)
+ggplot(meandf, aes(x = counts, y = means)) + 
+  geom_point()
 
-case_ids <- typeCounts[which(typeCounts$TypeCounts == 0), 1]
-mhs <- data.frame(test2[test2$CASE_ID %in% case_ids, 2])
-mean(mhs$MHpercent)
+table(typeCounts$TypeCounts)
+
+case_ids <- typeCounts[which(typeCounts$TypeCounts == 6), 1]
+mergedData <- read.csv("Data/MergedData.csv")
+filtered <- mergedData %>%
+  filter(CASE_ID %in% case_ids)
+
 
 finalDat <- read.csv("Data/FamilyFinalData.csv")
 typeCounts <- read.csv("Data/CompleteXYData.csv")
