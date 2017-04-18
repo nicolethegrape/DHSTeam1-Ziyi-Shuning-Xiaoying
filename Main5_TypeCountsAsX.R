@@ -15,7 +15,40 @@ library(dplyr)
 # source("Functions/MergeXYVars.R")
 # typeCountsFinalData <- mergeXYVars(typeCountsData, familyPlacePostCYFData, durationAndCloseTimes)
 
-typeCountsFinalData <- read.csv("Data/TypeCountsFinalData.csv")
+tc <- read.csv("Data/TypeCountsFinalData.csv")
+
+countCat <- NULL
+for (i in 1: dim(typeCountsFinalData)[1]){
+  cat <- 0
+  if (tc[i, 2] < 4){
+    cat <- 1
+  } else if (tc[i, 2] < 6){
+    cat <- 2
+  } else {
+    cat <- 3
+  }
+  countCat <- c(countCat, cat)
+}
+
+tc <- cbind.data.frame(tc, countCat)
+
+library(ggplot2)
+
+tc$countCat <- as.factor(tc$countCat)
+
+ggplot(tc, aes(x = countCat, fill = PlacementAsY, order = -as.numeric(PlacementAsY))) + 
+  geom_bar(stat = "bin", position = "fill", alpha=0.6, width = 0.5) + 
+  xlab("Number of Services") +
+  ylab("Percentages") +
+  ggtitle("Number of Services and Placement") + 
+  scale_fill_discrete(labels=c("No Placement", "Placement")) +
+  theme_bw() +
+  theme(axis.text=element_text(size=14,face="bold"),
+        axis.title=element_text(size=14,face="bold"),
+        plot.title = element_text(size = 22, face = "bold"),
+        legend.text=element_text(size=12,face="bold"),
+        legend.position = "top",
+        legend.title=element_blank())
 
 ## Temporarily put graph codes here
 

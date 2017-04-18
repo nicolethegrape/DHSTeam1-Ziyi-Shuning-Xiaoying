@@ -119,7 +119,7 @@ mergedDat <- read.csv("Data/MergedData.csv")
 selectDat <- mergedDat[mergedDat$CASE_ID == 37967 | mergedDat$CASE_ID == 59282,]
 
 mergedDat <- read.csv("Data/MergedData.csv")
-test <- mergedDat[mergedDat$CASE_ID %in% typeCounts[which(typeCounts$TypeCounts == 7 | typeCounts$TypeCounts == 8),1],]
+test <- mergedDat[mergedDat$CASE_ID %in% tc[which(tc$TypeCounts == 8),1],]
 
 serviceBAData <- read.csv("Data/ServiceBAData.csv")
 library(dplyr)
