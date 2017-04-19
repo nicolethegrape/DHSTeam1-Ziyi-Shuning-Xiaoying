@@ -38,7 +38,6 @@ mergeData <- function(entrycohort, crosssystem){
   return(mergedData)
 }
 
-source("Functions/MergeData.R")
 dat1 <- read_excel("Data/DHS_Case_Clients_2016EntryCohort.xlsx", 
                    sheet = "DHS_Case_Clients_2016EntryCohor") # 16639 obs
 dat2 <- read_excel("Data/DHS_CrossSystem.xlsx",
@@ -164,7 +163,7 @@ familyPlacePostCYFData <- calFamilyPlacePostCYF(serviceBAData)
 # get durationAndCloseTimes 
 durationAndCloseTimes <- read.csv("Data/DurationAndCloseTimes.csv")
 
-#########################################
+
 # merge the X and Y variables  --- Shuning 
 mergeXYVars <- function(xVars, placeAsY, durationAndCloseTimes){
   familyFinalData <- cbind.data.frame(xVars, placeAsY[,2], durationAndCloseTimes[,2:3])
@@ -172,7 +171,8 @@ mergeXYVars <- function(xVars, placeAsY, durationAndCloseTimes){
   return(familyFinalData)
 }
 
-familyFinalData <- mergeXYVars(familyPreCYFCatData, familyPlacePostCYFData, durationAndCloseTimes)
+familyFinalData <- mergeXYVars(familyPreCYFData, familyPlacePostCYFData, durationAndCloseTimes)
+typeCountsFinalData <- mergeXYVars(typeCountsData, familyPlacePostCYFData, durationAndCloseTimes)
 
 # calculate type counts function ---Shuning 
 calTypeCounts <- function(familyPreCYFData){
@@ -189,7 +189,11 @@ calTypeCounts <- function(familyPreCYFData){
 
 typeCountsData <- calTypeCounts(familyPreCYFData)
 
-##########get the final complete data ########
+# get the final complete data
+
+xVars <- cbind.data.frame(familyPreCYFCatData, typeCountsData)
+CompleteXYData <- mergeXYVars(xVars, familyPlacePostCYFData, durationAndCloseTimes)
+write.csv(CompleteXYData, "Data/CompleteXYData.csv", row.names=FALSE)
 
 ####ggplot####
 
@@ -197,7 +201,7 @@ typeCountsData <- calTypeCounts(familyPreCYFData)
 ## Xiaoying 
 # get the plot data 
 #generate a percent data frame.
-dat<-FamilyFinalData
+dat <- familyFinalData
 GeneratePercent<-function(dat){
   percentTrue<-NULL
   percentFalse<-NULL
@@ -213,8 +217,8 @@ GeneratePercent<-function(dat){
   
   return(plotdata)
 }
-#call function, get new data set.
 
+#call function, get new data set.
 plotData<-GeneratePercent(dat)
 
 #write new data set into a csv
@@ -264,17 +268,17 @@ genFourGroups <- function(x, y){
   }
   return(groups)
 }
-finalDat <- read.csv("Data/FamilyFinalData.csv")
-groups <- genFourGroups(finalDat$Housing, finalDat$BasicNeeds)
-test <- cbind.data.frame(finalDat, groups = groups)
 
-ConditionalData <- test %>%
+groups <- genFourGroups(familyFinalData$Housing, familyFinalData$BasicNeeds)
+conditional <- cbind.data.frame(familyFinalData, groups = groups)
+
+ConditionalData <- conditional %>%
   group_by(groups, FSC) %>%
   summarise(percent = round(length(which(PlacementAsY == TRUE)) / n() * 100, 1))
 
 # ggplot -- Ziyi 
-conditional<-ggplot(ConditionalData,aes(y=percent,ymax=max(percent)*1.10, x=groups, fill=FSC))
-conditional+geom_bar(stat = "identity",position = "dodge",alpha=0.7, width = 0.5)  +
+ggplot(ConditionalData,aes(y=percent,ymax=max(percent)*1.10, x=groups, fill=FSC))+
+  geom_bar(stat = "identity",position = "dodge",alpha=0.7, width = 0.5)  +
   geom_text(aes(label=percent), position=position_dodge(width=0.6), hjust=0.5, vjust=-1, fontface="bold") + 
   scale_x_discrete(
     labels=function(x) {
@@ -293,8 +297,21 @@ conditional+geom_bar(stat = "identity",position = "dodge",alpha=0.7, width = 0.5
         legend.title=element_blank())
 
 # ggplot3: bar chart of type counts and percentage of placement -- Shuning 
-#
 
+typeCountsFinalData$TypeCounts <- as.factor(typeCountsFinalData$TypeCounts)
 
-
+ggplot(typeCountsFinalData, aes(x = TypeCounts, fill = PlacementAsY, order = -as.numeric(PlacementAsY))) + 
+  geom_bar(stat = "bin", position = "fill", alpha=0.6, width = 0.5) + 
+  geom_text(aes(label=), position=position_dodge(width=0.6), hjust=0.5, vjust=-1, fontface="bold") + 
+  xlab("Number of Services") +
+  ylab("Percentages") +
+  ggtitle("Number of Services and Placement") + 
+  scale_fill_discrete(labels=c("No Placement", "Placement")) +
+  theme_bw() +
+  theme(axis.text=element_text(size=14,face="bold"),
+        axis.title=element_text(size=14,face="bold"),
+        plot.title = element_text(size = 22, face = "bold"),
+        legend.text=element_text(size=12,face="bold"),
+        legend.position = "top",
+        legend.title=element_blank())
 
