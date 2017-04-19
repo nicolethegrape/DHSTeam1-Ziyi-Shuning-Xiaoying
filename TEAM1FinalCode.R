@@ -196,6 +196,29 @@ typeCountsData <- calTypeCounts(familyPreCYFData)
 ####ggplot1: service and percentage of placement for the three catagories of the services ####
 ## Xiaoying 
 # get the plot data 
+#generate a percent data frame.
+dat<-FamilyFinalData
+GeneratePercent<-function(dat){
+  percentTrue<-NULL
+  percentFalse<-NULL
+  serviceName<-c("Housing","Basic Needs","FSC","Housing","Baisc Needs","FSC")
+  serviceStatus<-c(rep("TRUE",3),rep("FALSE",3))
+  
+  for(i in 3:5){
+    percentTrue<-c(length(which(dat[,i]=="TRUE"&dat[,6]=="TRUE"))/length(which(dat[,i]=="TRUE"))*100,percentTrue)
+    percentFalse<-c(length(which(dat[,i]=="FALSE"&dat[,6]=="TRUE"))/length(which(dat[,i]=="FALSE"))*100,percentFalse)
+  }
+  percent<-c(percentTrue,percentFalse)
+  plotdata<-data.frame(serviceName,serviceStatus,percent)
+  
+  return(plotdata)
+}
+#call function, get new data set.
+
+plotData<-GeneratePercent(dat)
+
+#write new data set into a csv
+write.csv(plotData,"plotData.csv")
 
 # ggplot 
 percent2<-plotData$percent*100
