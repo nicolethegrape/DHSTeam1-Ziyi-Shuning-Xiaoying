@@ -57,6 +57,7 @@ library(ggplot2)
 typeCountsFinalData$TypeCounts <- as.factor(typeCountsFinalData$TypeCounts)
 ggplot(typeCountsFinalData, aes(x = TypeCounts, fill = PlacementAsY, order = -as.numeric(PlacementAsY))) + 
   geom_bar(stat = "bin", position = "fill", alpha=0.6, width = 0.5) + 
+  geom_text(aes(label=), position=position_dodge(width=0.6), hjust=0.5, vjust=-1, fontface="bold") + 
   xlab("Number of Services") +
   ylab("Percentages") +
   ggtitle("Number of Services and Placement") + 
@@ -69,7 +70,7 @@ ggplot(typeCountsFinalData, aes(x = TypeCounts, fill = PlacementAsY, order = -as
         legend.position = "top",
         legend.title=element_blank())
 
-typeCountsPercent <- typeCountsFinalData %>%
+tcPercent <- tc %>%
   group_by(TypeCounts) %>%
   summarise(PlacePercent = round(length(which(PlacementAsY == TRUE)) / n() * 100, 1))
 
