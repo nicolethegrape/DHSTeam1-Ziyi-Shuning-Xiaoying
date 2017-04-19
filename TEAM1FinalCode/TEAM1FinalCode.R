@@ -257,8 +257,16 @@ ggplot(serviceTypeCount, aes(Type, Count)) +
   theme(plot.title = element_text(hjust = 0.5)) 
 
 
-## Graph 4 #！！！！！wrong version  update needed#
+## Graph 4 ##
 ##Service Type Counts##----Duo
+install.packages("plotrix")
+install.packages("readr")
+library(plotrix)
+library(readr)
+install.packages("RColorBrewer")
+library(RColorBrewer)
+
+#Distribution of service Type Counts on family level
 dat <- mergedData[,c(grep("CASE_ID", colnames(mergedData)),
                      grep("ACHA_MAX_ACTIVE", colnames(mergedData)),
                      grep("HH_MAX_ACTIVE", colnames(mergedData)),
@@ -290,11 +298,14 @@ countType <- data.frame(caseID, numOfType)
 
 x <- table(countType$numOfType)
 piepercent <- round(100*x/sum(x), 1) 
+piepercent <-paste(piepercent, "%", sep = "")
+par(mfrow=c(1,1),mar=c(2,1.5,1,0.5),oma=c(2,1.5,1,0.5))
+pie(x, labels = piepercent, radius = 0.8,main="Pie Chart of Service Type Count", col=brewer.pal(9,"Blues"), clockwise = FALSE,
+    
+    density = NULL, angle = 45, lty = NULL, border = NULL, edges = 200)
+legend("bottom", legend=c("0", "1", "2", "3", "4", "5", "6", "7", "8"), 
+       cex = 0.6, horiz = T, fill =brewer.pal(9,"Blues") )
 
-pie3D(x,labels=piepercent, explode=0.1, 
-      main="Pie Chart of Service Type Count")
-legend("top", legend=c("0", "1", "2", "3", "4", "5", "6", "7", "8"), 
-       cex = 0.8, horiz = T, fill = rainbow(length(x)))
 
 
 ## Graph 5##
