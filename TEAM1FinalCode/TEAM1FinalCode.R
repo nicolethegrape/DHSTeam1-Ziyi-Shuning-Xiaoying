@@ -392,7 +392,7 @@ ggplot(ConditionalData,aes(y=percent,ymax=max(percent)*1.10, x=groups, fill=FSC)
         legend.position = "top",
         legend.title=element_blank())
 
-## Graph 6 ##
+## Graph 7 ##
 ###bar chart of type counts and percentage of placement -- Shuning 
 
 typeCountsFinalData$TypeCounts <- as.factor(typeCountsFinalData$TypeCounts)
