@@ -1,5 +1,5 @@
 rm(list = ls())
-setwd("~/Desktop/Capstone/DHSTeam1-Ziyi-Shuning-Xiaoying/TEAM1FinalCode")
+setwd("~/Desktop/2017Spring/R/DHSTeam1/TEAM1FinalCode")
 
 # library all the packages
 library(dplyr)
@@ -8,9 +8,10 @@ library(readxl)
 library(zoo)
 library(ggplot2)
 
-###### DHS TEAM1 Code####
+###### DHS Code####
 
-### data cleaning ###
+####################Part1########################
+################Data cleaning ###################
 
 # generate merged data --- Shuning 
 lengthunique<- function(x) {
@@ -198,10 +199,107 @@ xVars <- cbind.data.frame(familyPreCYFCatData, typeCountsData)
 CompleteXYData <- mergeXYVars(xVars, familyPlacePostCYFData, durationAndCloseTimes)
 write.csv(CompleteXYData, "CompleteXYData.csv", row.names=FALSE)
 
-####ggplot####
 
-####ggplot1: service and percentage of placement for the three catagories of the services ####
-## Xiaoying 
+####################Part2########################
+#####################ggPlot#####################
+
+
+
+## Graph1##
+##Duration Days Count##-Zhehan
+DurationDF <- as.data.frame(table(familyFinalData$Duration))
+colnames(DurationDF) <- c("Duration", "Count")
+
+ggplot(DurationDF, aes(Duration, Count)) +
+  geom_bar(position="dodge", stat="identity", fill="#708090") +
+  geom_label(aes(label=Count), color="#2F4F4F", size=4) + 
+  ggtitle("Duration Days Count") +
+  geom_vline(aes(xintercept=14.9), colour="red", linetype=5, size=1) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+## Graph2##
+##Close Time Count##----Duo
+CloseTimesDF <- as.data.frame(table(familyFinalData$CloseTimes))
+colnames(CloseTimesDF) <- c("CloseTimes", "Count")
+
+ggplot(CloseTimesDF, aes(CloseTimes, Count)) +
+  geom_bar(position="dodge", stat="identity", fill="#66CDAA") +
+  geom_label(aes(label=Count), color="#008080", size=4) + 
+  ggtitle("Close Times Count") +
+  geom_vline(aes(xintercept=1.691414), colour="red", linetype=5, size=1) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5)) # Move the title to the center
+
+## Graph3 ##
+##Service Type Combot##----Zhehan
+
+onlyHousing <- length(which(familyFinalData$Housing==T & familyFinalData$BasicNeeds==F & familyFinalData$FSC==F))
+onlyBN <- length(which(familyFinalData$Housing==F & familyFinalData$BasicNeeds==T & familyFinalData$FSC==F))
+onlyFSC <- length(which(familyFinalData$Housing==F & familyFinalData$BasicNeeds==F & familyFinalData$FSC==T))
+Housing_BN <- length(which(familyFinalData$Housing==T & familyFinalData$BasicNeeds==T & familyFinalData$FSC==F))
+Housing_FSC <- length(which(familyFinalData$Housing==T & familyFinalData$BasicNeeds==F & familyFinalData$FSC==T))
+BN_FSC <- length(which(familyFinalData$Housing==F & familyFinalData$BasicNeeds==T & familyFinalData$FSC==F))
+Housing_BN_FSC <- length(which(familyFinalData$Housing==T & familyFinalData$BasicNeeds==T & familyFinalData$FSC==T))
+
+Type <- c("only Housing", "only BN", "only FSC", "Housing & BN", "Housing & FSC", "BN & FSC", "Housing & BN & FSC")
+Count <- c(onlyHousing, onlyBN, onlyFSC, Housing_BN, Housing_FSC, BN_FSC, Housing_BN_FSC)
+serviceTypeCount <- data.frame(Type, Count)
+
+serviceTypeCount$Type <- factor(serviceTypeCount$Type, levels = unique(serviceTypeCount$Type)) #keep the order of types
+
+ggplot(serviceTypeCount, aes(Type, Count)) + 
+  geom_bar(position="dodge", stat="identity", fill="#ADD8E6") +
+  geom_label(aes(label=Count), color="#000080", size=4) + 
+  ggtitle("Service Type Count") +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+
+## Graph 4 #！！！！！wrong version  update needed#
+##Service Type Counts##----Duo
+dat <- mergedData[,c(grep("CASE_ID", colnames(mergedData)),
+                     grep("ACHA_MAX_ACTIVE", colnames(mergedData)),
+                     grep("HH_MAX_ACTIVE", colnames(mergedData)),
+                     grep("HACP_MAX_ACTIVE", colnames(mergedData)),
+                     grep("DPW_FS_MAX_ACTIVE", colnames(mergedData)),
+                     grep("DPW_GA_MAX_ACTIVE", colnames(mergedData)),
+                     grep("DPW_SSI_MAX_ACTIVE", colnames(mergedData)),
+                     grep("DPW_TANF_MAX_ACTIVE", colnames(mergedData)),
+                     grep("FSC_MAX_ACTIVE", colnames(mergedData)))]
+caseID <- unique(dat$CASE_ID)
+
+numOfType <- NULL
+i <- 1
+# For each caseID, count how many service columns with entire NA
+for (c in caseID){
+  df <- dat[which(dat$CASE_ID==c), ]
+  x <- 0   # x: how many columns with entire NA
+  for (j in 2:9){ #col2 to col9: columns of the 8 services
+    if(all(is.na(df[,j]))){ # check if this column is with entire NA
+      x <- x+1
+    }
+  }
+  y <- 8-x # y : how many types of services does this caseID have
+  numOfType[i] <- y
+  i <- i+1
+}
+
+countType <- data.frame(caseID, numOfType)
+
+x <- table(countType$numOfType)
+piepercent <- round(100*x/sum(x), 1) 
+
+pie3D(x,labels=piepercent, explode=0.1, 
+      main="Pie Chart of Service Type Count")
+legend("top", legend=c("0", "1", "2", "3", "4", "5", "6", "7", "8"), 
+       cex = 0.8, horiz = T, fill = rainbow(length(x)))
+
+
+## Graph 5##
+####service and percentage of placement for the three catagories of the services ####
+#---------Xiaoying 
 # get the plot data 
 #generate a percent data frame.
 dat <- familyFinalData
@@ -244,7 +342,8 @@ ggplot(plotData,aes(y = percent, ymax = max(percent)*1.10, x = serviceName, fill
         legend.title=element_text(size=14,face="bold"),
         legend.position = "top")
 
-##### ggplot2: service and percentage of placement conditional bar chart -- Ziyi ####
+## Graph 6 ##
+##service and percentage of placement conditional bar chart -- Ziyi ####
 
 # get the plot data -- Shuning 
 genFourGroups <- function(x, y){
@@ -293,12 +392,13 @@ ggplot(ConditionalData,aes(y=percent,ymax=max(percent)*1.10, x=groups, fill=FSC)
         legend.position = "top",
         legend.title=element_blank())
 
-# ggplot3: bar chart of type counts and percentage of placement -- Shuning 
+## Graph 6 ##
+###bar chart of type counts and percentage of placement -- Shuning 
 
 typeCountsFinalData$TypeCounts <- as.factor(typeCountsFinalData$TypeCounts)
 
 ggplot(typeCountsFinalData, aes(x = TypeCounts, fill = PlacementAsY, order = -as.numeric(PlacementAsY))) + 
-  geom_bar(stat = "bin", position = "fill", alpha=0.6, width = 0.5) + 
+  geom_bar(stat = "count", position = "fill", alpha=0.6, width = 0.5) + 
   xlab("Number of Services") +
   ylab("Percentages") +
   ggtitle("Number of Services and Placement") + 
@@ -310,4 +410,7 @@ ggplot(typeCountsFinalData, aes(x = TypeCounts, fill = PlacementAsY, order = -as
         legend.text=element_text(size=12,face="bold"),
         legend.position = "top",
         legend.title=element_blank())
+
+
+
 
