@@ -1,3 +1,6 @@
+rm(list = ls())
+setwd("~/Desktop/Capstone/DHSTeam1-Ziyi-Shuning-Xiaoying/TEAM1FinalCode")
+
 # library all the packages
 library(dplyr)
 library(readr)
@@ -38,9 +41,9 @@ mergeData <- function(entrycohort, crosssystem){
   return(mergedData)
 }
 
-dat1 <- read_excel("Data/DHS_Case_Clients_2016EntryCohort.xlsx", 
+dat1 <- read_excel("DHS_Case_Clients_2016EntryCohort.xlsx", 
                    sheet = "DHS_Case_Clients_2016EntryCohor") # 16639 obs
-dat2 <- read_excel("Data/DHS_CrossSystem.xlsx",
+dat2 <- read_excel("DHS_CrossSystem.xlsx",
                    sheet = "SystemInvolvement_EC2016") # 8206 obs
 mergedData <- mergeData(dat1, dat2)
 
@@ -100,7 +103,7 @@ calServiceBA <- function(newMergedData){
 }
 ServiceBAData<-calServiceBA(convertedData)
 # write the serviceBAData for future use
-write.csv(serviceBAData, "Data/ServiceBAData.csv", row.names=FALSE)
+write.csv(ServiceBAData, "ServiceBAData.csv", row.names=FALSE)
 
 #generate the family level final data -- Shuning
 # convert client-level-before-after-data into family-level-before-data
@@ -119,8 +122,8 @@ calFamilyPreCYF <- function(serviceBAData){
   return(familyPreCYFData)
 }
 
-familyPreCYFData <- calFamilyPreCYF(serviceBAData)
-# write.csv(familyPreCYFData, "Data/FamilyPreCYFData.csv", row.names=FALSE)
+familyPreCYFData <- calFamilyPreCYF(ServiceBAData)
+# write.csv(familyPreCYFData, "FamilyPreCYFData.csv", row.names=FALSE)
 
 # aggregate the family PRE-CYF Catagories  --- Shuning 
 aggrFamilyPreCYFCat <- function(familyPreCYFData){
@@ -133,7 +136,7 @@ aggrFamilyPreCYFCat <- function(familyPreCYFData){
   return(familyPreCYFAggrData)
 }
 familyPreCYFCatData <- aggrFamilyPreCYFCat(familyPreCYFData)
-# write.csv(familyPreCYFCatData, "Data/FamilyPreCYFCatData.csv", row.names=FALSE)
+# write.csv(familyPreCYFCatData, "FamilyPreCYFCatData.csv", row.names=FALSE)
 
 # convert client-level-before-after-data into family-level-after-data for placement
 ## Shuning 
@@ -156,12 +159,12 @@ calFamilyPlacePostCYF <- function(serviceBAData){
   return(familyPlacePostCYFData)
 }
 
-familyPlacePostCYFData <- calFamilyPlacePostCYF(serviceBAData)
-# write.csv(familyPlacePostCYFData, "Data/FamilyPlacePostCYFData.csv", row.names=FALSE)
+familyPlacePostCYFData <- calFamilyPlacePostCYF(ServiceBAData)
+# write.csv(familyPlacePostCYFData, "FamilyPlacePostCYFData.csv", row.names=FALSE)
 
 ##########################################
 # get durationAndCloseTimes 
-durationAndCloseTimes <- read.csv("Data/DurationAndCloseTimes.csv")
+durationAndCloseTimes <- read.csv("DurationAndCloseTimes.csv")
 
 
 # merge the X and Y variables  --- Shuning 
@@ -171,8 +174,7 @@ mergeXYVars <- function(xVars, placeAsY, durationAndCloseTimes){
   return(familyFinalData)
 }
 
-familyFinalData <- mergeXYVars(familyPreCYFData, familyPlacePostCYFData, durationAndCloseTimes)
-typeCountsFinalData <- mergeXYVars(typeCountsData, familyPlacePostCYFData, durationAndCloseTimes)
+familyFinalData <- mergeXYVars(familyPreCYFCatData, familyPlacePostCYFData, durationAndCloseTimes)
 
 # calculate type counts function ---Shuning 
 calTypeCounts <- function(familyPreCYFData){
@@ -188,12 +190,13 @@ calTypeCounts <- function(familyPreCYFData){
 }
 
 typeCountsData <- calTypeCounts(familyPreCYFData)
+typeCountsFinalData <- mergeXYVars(typeCountsData, familyPlacePostCYFData, durationAndCloseTimes)
 
 # get the final complete data
 
 xVars <- cbind.data.frame(familyPreCYFCatData, typeCountsData)
 CompleteXYData <- mergeXYVars(xVars, familyPlacePostCYFData, durationAndCloseTimes)
-write.csv(CompleteXYData, "Data/CompleteXYData.csv", row.names=FALSE)
+write.csv(CompleteXYData, "CompleteXYData.csv", row.names=FALSE)
 
 ####ggplot####
 
@@ -205,12 +208,12 @@ dat <- familyFinalData
 GeneratePercent<-function(dat){
   percentTrue<-NULL
   percentFalse<-NULL
-  serviceName<-c("Housing","Basic Needs","FSC","Housing","Baisc Needs","FSC")
+  serviceName<-c("Housing","Basic Needs","FSC","Housing","Basic Needs","FSC")
   serviceStatus<-c(rep("TRUE",3),rep("FALSE",3))
   
   for(i in 3:5){
-    percentTrue<-c(length(which(dat[,i]=="TRUE"&dat[,6]=="TRUE"))/length(which(dat[,i]=="TRUE"))*100,percentTrue)
-    percentFalse<-c(length(which(dat[,i]=="FALSE"&dat[,6]=="TRUE"))/length(which(dat[,i]=="FALSE"))*100,percentFalse)
+    percentTrue<-c(round(length(which(dat[,i]=="TRUE"&dat[,6]=="TRUE"))/length(which(dat[,i]=="TRUE"))*100, 1),percentTrue)
+    percentFalse<-c(round(length(which(dat[,i]=="FALSE"&dat[,6]=="TRUE"))/length(which(dat[,i]=="FALSE"))*100, 1),percentFalse)
   }
   percent<-c(percentTrue,percentFalse)
   plotdata<-data.frame(serviceName,serviceStatus,percent)
@@ -221,19 +224,13 @@ GeneratePercent<-function(dat){
 #call function, get new data set.
 plotData<-GeneratePercent(dat)
 
-#write new data set into a csv
-write.csv(plotData,"plotData.csv")
-
 # ggplot 
-percent2<-plotData$percent*100
-plotData<-cbind(plotData,percent2)
-
 plotData$serviceName <- as.factor(plotData$serviceName)
 positions <- c("Housing", "Basic Needs", "FSC")
 
-ggplot(plotData,aes(y = percent2, ymax = max(percent2)*1.10, x = serviceName, fill = serviceStatus)) +
+ggplot(plotData,aes(y = percent, ymax = max(percent)*1.10, x = serviceName, fill = serviceStatus)) +
   geom_bar(stat = "identity",position = "dodge",alpha = 0.6, width = 0.5) +
-  geom_text(aes(label = percent2), position = position_dodge(width=0.5), hjust=0.4, vjust=-0.5, fontface = "bold") + 
+  geom_text(aes(label = percent), position = position_dodge(width=0.5), hjust=0.4, vjust=-0.5, fontface = "bold") + 
   ylab("% of Placement") +
   xlab("") +
   ggtitle("Services and Placement") +
@@ -302,7 +299,6 @@ typeCountsFinalData$TypeCounts <- as.factor(typeCountsFinalData$TypeCounts)
 
 ggplot(typeCountsFinalData, aes(x = TypeCounts, fill = PlacementAsY, order = -as.numeric(PlacementAsY))) + 
   geom_bar(stat = "bin", position = "fill", alpha=0.6, width = 0.5) + 
-  geom_text(aes(label=), position=position_dodge(width=0.6), hjust=0.5, vjust=-1, fontface="bold") + 
   xlab("Number of Services") +
   ylab("Percentages") +
   ggtitle("Number of Services and Placement") + 
