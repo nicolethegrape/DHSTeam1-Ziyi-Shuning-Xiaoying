@@ -263,7 +263,7 @@ case_group<-group_by(dat,CaseID)
 dat2<-summarise(case_group,nClose=max(nClose),Duration2=max(duration))
 FamilyDataDeep<-cbind(FamilyDataDeep,duration2=dat2$Duration2)
 FamilyDataDeep<-select(FamilyDataDeep,-(10:11))
-FamilyDataDeep<-rename(FamilyDataDeep,duration2=dat2.Duration)
+FamilyDataDeep<-rename(FamilyDataDeep,dat2.Duration=duration2)
 
 #head(FamilyFinalData)
 write.csv(FamilyDataDeep,"FamilyDataDeep.csv",row.names = FALSE)
@@ -341,19 +341,6 @@ length(which(a$DPW_FS==-1)) #191
 length(which(a$DPW_GA==-1)) #317
 length(which(a$DPW_SSI==-1)) #476
 length(which(a$FSC==-1)) #250
-
-####### Statistics
-mean(deepData$Duration[which(deepData$DPW_FS==1)])
-mean(deepData$CloseTimes[which(deepData$DPW_FS==1)])
-
-group_by(deepData, BasicNeeds) %>%
-  summarise(percent = round(length(which(PlacementAsY == TRUE)) / n() * 100, 1))
-
-mean(deepData$nClients[which(deepData$DPW_FS==1)])
-
-t.test(deepData$Duration~deepData$DPW_FS)
-t.test(deepData$CloseTimes~deepData$DPW_FS)
-t.test(deepData$PlacementAsY~deepData$DPW_TANF)
 
 ##### End #######
 
@@ -646,12 +633,11 @@ ggplot(familyFinalData, aes(x=FSC, y = CloseTimes, color=FSC)) +
 
 ############Three graphs of duration######Xiaoya##########
 ###
-newdat<-group_by(familyFinalData,Housing)
-housingmean<-summarise(newdat,housingmean=mean(Duration))
+housingmean<- ddply(familyFinalData, "Housing", summarise, housingmean=mean(Duration))
 
-ggplot(familyFinalData, aes(x=Duration,color=Housing)) + 
+ggplot(familyFinalData, aes(x=Duration,colour=Housing)) + 
   geom_density(size=1)+
-  geom_vline(data=housingmean,aes(xintercept = housingmean,color=Housing),linetype="dashed",size=1)+
+  geom_vline(data=housingmean,aes(xintercept = housingmean, colour=Housing),linetype="dashed",size=1)+
   geom_vline(xintercept = 147.102,size=1,color="blue")+
   annotate("text", x=170, y=0.0045, label="16",size=5)+
   theme_bw()+
@@ -662,8 +648,7 @@ ggplot(familyFinalData, aes(x=Duration,color=Housing)) +
 
 
 ###
-newdat1<-group_by(familyFinalData,BasicNeeds)
-basicneedsmean<-summarise(newdat1,basicneedsmean=mean(Duration))
+basicneedsmean<- ddply(familyFinalData, "BasicNeeds", summarise, basicneedsmean=mean(Duration))
 
 ggplot(familyFinalData, aes(x=Duration,color=BasicNeeds)) + 
   geom_density(size=1)+
@@ -679,8 +664,7 @@ ggplot(familyFinalData, aes(x=Duration,color=BasicNeeds)) +
 
 
 ###
-newdat2<-group_by(familyFinalData,FSC)
-FSCmean<-summarise(newdat2,FSCmean=mean(Duration))
+FSCmean<-ddply(familyFinalData, "FSC", summarise, FSCmean=mean(Duration))
 
 ggplot(familyFinalData, aes(x=Duration,color=FSC)) + 
   geom_density(size=1)+
@@ -696,32 +680,9 @@ ggplot(familyFinalData, aes(x=Duration,color=FSC)) +
 
 
 ################
-t.test(familyFinalData$Duration~fFamilyFinalData$Housing)
+t.test(familyFinalData$Duration~familyFinalData$Housing)
 t.test(familyFinalData$Duration~familyFinalData$BasicNeeds)
 t.test(familyFinalData$Duration~familyFinalData$FSC)
-
-
-#non parametric version 
-wilcox.test(familyFinalData$Duration~familyFinalData$Housing) 
-
-###############
-housingmean<-mutate(housingmean,Service="Housing")
-colnames(housingmean)[1]<-"Status"
-colnames(housingmean)[2]<-"Duration"
-basicneedsmean<-mutate(basicneedsmean,Service="BasicNeeds")
-colnames(basicneedsmean)[1]<-"Status"
-colnames(basicneedsmean)[2]<-"Duration"
-meanduration<-rbind(housingmean,basicneedsmean)
-meanduration$Service<-factor(meanduration$Service, levels=c("Housing","BasicNeeds")) 
-meanduration$Duration<-round(meanduration$Duration,2)
-
-ggplot(meanduration,aes(x=Service,y=Duration,fill=Status))+
-  geom_col(position="dodge",alpha=0.6,width = 0.5)+
-  ylim(0,160)+
-  geom_text(aes(label = Duration,vjust = -0.5, hjust = 0.5, color = "Status", size=3), show.legend  = FALSE)+
-  theme(legend.title=element_blank())+
-  ggtitle("Mean of duration")+
-  theme(plot.title = element_text(size=22))
 
 #needs to be made into two 
 
