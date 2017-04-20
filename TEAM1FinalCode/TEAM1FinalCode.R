@@ -7,6 +7,16 @@ library(readr)
 library(readxl)
 library(zoo)
 library(ggplot2)
+library(plyr)
+library(magrittr)
+library("stringi")
+install.packages("plotrix")
+install.packages("readr")
+install.packages("RColorBrewer")
+library(plotrix)
+library(readr)
+library(RColorBrewer)
+
 
 ###### DHS Code####
 
@@ -164,7 +174,62 @@ familyPlacePostCYFData <- calFamilyPlacePostCYF(ServiceBAData)
 # write.csv(familyPlacePostCYFData, "FamilyPlacePostCYFData.csv", row.names=FALSE)
 
 ##########################################
-# get durationAndCloseTimes 
+# get durationAndCloseTimes -----Group2 Jia
+clientdat<-read.csv("ServiceBAData.csv")
+library("dplyr")
+library("stringi")
+
+# Task1: Aggreagate Client level-->Case level. 
+# count as -1 if before, 1 if any after, 0 if all NA
+
+# Function groupvalue: create variable that assign value1 if any value1, else: value2 if any value2, else: value 3. 
+groupvalue<-function(var,value1=-1,value2=1,value3=0){
+  output<-ifelse(any(var==value1), value1,ifelse(any(var==value2),value2,value3))
+}
+
+case_group<-group_by(clientdat,CASE_ID)
+casedat<-summarise_each(case_group,funs(groupvalue))
+print(casedat)
+casedat<-select(casedat,-(CLIENT_ID))
+
+#### Task2: close times
+dat<-read.csv("ShortenClientsMerged.csv")
+
+nClosedate<-function(closedates){
+  a<-stri_count_fixed(closedates, ",")+1
+  a[which(is.na(a))]<-1
+  output<-a
+}
+# Client level
+dat$nClose<-nClosedate(dat$CloseDate)
+clientdat<-cbind(clientdat,dat$nClose)
+# Case level
+case_group<-group_by(dat,CaseID)
+dat2<-summarise(case_group,nClose=max(nClose)) # caseID and nClose table
+# table(dat2$nClose)
+
+### Task3: duration
+# 1) last close date
+class(dat$CloseDate)
+# length(which(is.na(dat$CloseDate))) is 2046
+s_close<-strsplit(as.character(dat$CloseDate),split=",")
+s_close<-sapply(s_close,sort)
+s_close[which(s_close=="character(0)")]<-"NA" # 2046 characters have been changed
+
+dat$lastClose<-sapply(s_close, tail, 1)
+# table(dat$lastClose)
+dat$lastClose[dat$lastClose=="NA"]<-"2017-02-01"
+# 2) Client level duration
+dat$AcceptDate<-as.Date(dat$AcceptDate)
+dat$lastClose<-as.Date(dat$lastClose)
+dat$duration=dat$lastClose-dat$AcceptDate
+# table(dat$duration)
+clientdat<-cbind(clientdat,dat$duration)
+# 3) Case level duration
+case_group<-group_by(dat,CaseID)
+dat2<-summarise(case_group,nClose=max(nClose),Duration=max(duration))
+write.csv(dat2, "DurationAndCloseTimes.csv", row.names=FALSE)
+
 durationAndCloseTimes <- read.csv("DurationAndCloseTimes.csv")
 
 
@@ -192,12 +257,51 @@ calTypeCounts <- function(familyPreCYFData){
 
 typeCountsData <- calTypeCounts(familyPreCYFData)
 typeCountsFinalData <- mergeXYVars(typeCountsData, familyPlacePostCYFData, durationAndCloseTimes)
+write.csv(typeCountsFinalData, "typeCountsFinalData.csv", row.names=FALSE)
 
 # get the final complete data
 
 xVars <- cbind.data.frame(familyPreCYFCatData, typeCountsData)
 CompleteXYData <- mergeXYVars(xVars, familyPlacePostCYFData, durationAndCloseTimes)
 write.csv(CompleteXYData, "CompleteXYData.csv", row.names=FALSE)
+
+### Family Size and number of children
+raw<-read.csv("ShortenClientsMerged.csv")
+
+## Family size
+PeopleinCase<-function(datasetname,groupname){
+  datasetname<-group_by_(datasetname,groupname)
+  newdata<-summarise(datasetname, nClients=n())
+}
+
+nFamily<-PeopleinCase(raw,"CaseID")
+deepData<-merge(familyFinalData,nFamily,by.x="CASE_ID",by.y="CaseID",all = TRUE)
+
+## number of Children
+nChild<-raw %>%
+  group_by(CaseID)%>%
+  summarize(nChildren=length(CrossID[Role=="C"]))
+deepData<-merge(deepData,nChild,by.x="CASE_ID",by.y="CaseID")
+
+write.csv(deepData,"deepData.csv")
+
+###0418# Dig deeper
+#36
+table(casedat$DPW_FS)
+table(casedat$DPW_GA)
+table(casedat$DPW_SSI)
+table(casedat$DPW_TANF)
+
+a<-filter(casedat,DPW_TANF==-1)
+length(which(a$HH==-1)) # 122
+length(which(a$HACP==-1)) #67
+length(which(a$ACHA==-1)) #184
+length(which(a$DPW_FS==-1)) #191
+length(which(a$DPW_GA==-1)) #317
+length(which(a$DPW_SSI==-1)) #476
+length(which(a$FSC==-1)) #250
+
+##### End #######
 
 
 ####################Part2########################
@@ -259,12 +363,6 @@ ggplot(serviceTypeCount, aes(Type, Count)) +
 
 ## Graph 4 ##
 ##Service Type Counts##----Duo
-install.packages("plotrix")
-install.packages("readr")
-library(plotrix)
-library(readr)
-install.packages("RColorBrewer")
-library(RColorBrewer)
 
 #Distribution of service Type Counts on family level
 dat <- mergedData[,c(grep("CASE_ID", colnames(mergedData)),
@@ -421,6 +519,163 @@ ggplot(typeCountsFinalData, aes(x = TypeCounts, fill = PlacementAsY, order = -as
         legend.text=element_text(size=12,face="bold"),
         legend.position = "top",
         legend.title=element_blank())
+## 
+#######Three graphs of closetimes#######Alberto########
+##
+mu <- ddply(familyFinalData, "Housing", summarise, grp.mean=mean(CloseTimes))
+
+ggplot(familyFinalData, aes(x=CloseTimes, fill=Housing,color=Housing)) + 
+  geom_density(aes(y = ..density..),binwidth=.5, position="dodge", alpha=0.5)+
+  geom_vline(data=mu, aes(xintercept=grp.mean, color=Housing),
+             linetype="dashed") +
+  stat_function(fun = dnorm, colour = "Black",
+                args = list(mean = mean(familyFinalData$CloseTimes, na.rm = TRUE),
+                            sd = sd(familyFinalData$CloseTimes, na.rm = TRUE)))+
+  scale_fill_discrete(breaks=c("FALSE", "TRUE"),
+                      labels=c("Post-CYF Service & NA", "Pre-CYF Service")) +
+  guides(color=FALSE)
+
+ggplot(familyFinalData, aes(x=Housing, y = CloseTimes, color=Housing)) + 
+  geom_boxplot() +
+  guides(color=FALSE) +
+  theme_bw()
+
+
+
+##
+mu <- ddply(familyFinalData, "BasicNeeds", summarise, grp.mean=mean(CloseTimes))
+
+ggplot(familyFinalData, aes(x=CloseTimes, fill=BasicNeeds,color=BasicNeeds)) + 
+  geom_histogram(aes(y = ..density..),binwidth=.5, position="dodge", alpha=0.5)+
+  geom_vline(data=mu, aes(xintercept=grp.mean, color=BasicNeeds),
+             linetype="dashed") +
+  stat_function(fun = dnorm, colour = "Black",
+                args = list(mean = mean(familyFinalData$CloseTimes, na.rm = TRUE),
+                            sd = sd(familyFinalData$CloseTimes, na.rm = TRUE)))+
+  scale_fill_discrete(breaks=c("FALSE", "TRUE"),
+                      labels=c("Post-CYF Service & NA", "Pre-CYF Service")) +
+  guides(color=FALSE)
+
+
+ggplot(familyFinalData, aes(x=BasicNeeds, y = CloseTimes, color=BasicNeeds)) + 
+  geom_boxplot() +
+  guides(color=FALSE) +
+  theme_bw()
+
+
+##
+mu <- ddply(familyFinalData, "FSC", summarise, grp.mean=mean(CloseTimes))
+
+ggplot(familyFinalData, aes(x=CloseTimes, fill=FSC,color=FSC)) + 
+  geom_histogram(aes(y = ..density..),binwidth=.5, position="dodge", alpha=0.5)+
+  geom_vline(data=mu, aes(xintercept=grp.mean, color=FSC),
+             linetype="dashed") +
+  stat_function(fun = dnorm, colour = "Black",
+                args = list(mean = mean(familyFinalData$CloseTimes, na.rm = TRUE),
+                            sd = sd(familyFinalData$CloseTimes, na.rm = TRUE)))+
+  scale_fill_discrete(breaks=c("FALSE", "TRUE"),
+                      labels=c("Post-CYF Service & NA", "Pre-CYF Service")) +
+  guides(color=FALSE)
+
+ggplot(familyFinalData, aes(x=FSC, y = CloseTimes, color=FSC)) + 
+  geom_boxplot() +
+  guides(color=FALSE) +
+  theme_bw()
+
+############Three graphs of duration######Xiaoya##########
+###
+newdat<-group_by(familyFinalData,Housing)
+housingmean<-summarise(newdat,housingmean=mean(Duration))
+
+ggplot(familyFinalData, aes(x=Duration,color=Housing)) + 
+  geom_density(size=1)+
+  geom_vline(data=housingmean,aes(xintercept = housingmean,color=Housing),linetype="dashed",size=1)+
+  geom_vline(xintercept = 147.102,size=1,color="blue")+
+  annotate("text", x=170, y=0.0045, label="16",size=5)+
+  theme_bw()+
+  theme(legend.position = "top")+
+  theme(legend.title=element_blank())+
+  ggtitle("Housing")+
+  theme(plot.title = element_text(size=22))
+
+
+###
+newdat1<-group_by(familyFinalData,BasicNeeds)
+basicneedsmean<-summarise(newdat1,basicneedsmean=mean(Duration))
+
+ggplot(familyFinalData, aes(x=Duration,color=BasicNeeds)) + 
+  geom_density(size=1)+
+  geom_vline(data=basicneedsmean,aes(xintercept = basicneedsmean,color=BasicNeeds),linetype="dashed",size=1)+
+  geom_vline(xintercept = 147.102,size=1,color="blue")+
+  annotate("text", x=170, y=0.0045, label="18",size=5)+
+  theme_bw()+
+  theme(legend.position = "top")+
+  ylim(0.000,0.005)+
+  theme(legend.title=element_blank())+
+  ggtitle("Basic Needs")+
+  theme(plot.title = element_text(size=22))
+
+
+###
+newdat2<-group_by(familyFinalData,FSC)
+FSCmean<-summarise(newdat2,FSCmean=mean(Duration))
+
+ggplot(familyFinalData, aes(x=Duration,color=FSC)) + 
+  geom_density(size=1)+
+  geom_vline(data=FSCmean,aes(xintercept = FSCmean,color=FSC),linetype="dashed",size=1)+
+  geom_vline(xintercept = 147.102,size=1,color="blue")+
+  annotate("text", x=170, y=0.0045, label="10",size=5)+
+  theme_bw()+
+  theme(legend.position = "top")+ 
+  ylim(0.000,0.005)+
+  theme(legend.title=element_blank())+
+  ggtitle("FSC")+
+  theme(plot.title = element_text(size=22))
+
+
+################
+t.test(familyFinalData$Duration~fFamilyFinalData$Housing)
+t.test(familyFinalData$Duration~familyFinalData$BasicNeeds)
+t.test(familyFinalData$Duration~familyFinalData$FSC)
+
+
+#non parametric version 
+wilcox.test(familyFinalData$Duration~FamilyFinalData$Housing) 
+
+###############
+housingmean<-mutate(housingmean,Service="Housing")
+colnames(housingmean)[1]<-"Status"
+colnames(housingmean)[2]<-"Duration"
+basicneedsmean<-mutate(basicneedsmean,Service="BasicNeeds")
+colnames(basicneedsmean)[1]<-"Status"
+colnames(basicneedsmean)[2]<-"Duration"
+meanduration<-rbind(housingmean,basicneedsmean)
+meanduration$Service<-factor(meanduration$Service, levels=c("Housing","BasicNeeds")) 
+meanduration$Duration<-round(meanduration$Duration,2)
+
+ggplot(meanduration,aes(x=Service,y=Duration,fill=Status))+
+  geom_col(position="dodge",alpha=0.6,width = 0.5)+
+  ylim(0,160)+
+  geom_text(aes(label = Duration,vjust = -0.5, hjust = 0.5, color = "Status", size=3), show.legend  = FALSE)+
+  theme(legend.title=element_blank())+
+  ggtitle("Mean of duration")+
+  theme(plot.title = element_text(size=22))
+
+#needs to be made into two 
+
+data2<-read.csv("typeCountsFinalData.csv")
+
+ggplot(data2, aes(x=TypeCounts, y=CloseTimes,colour=PlacementAsY))+
+  geom_jitter(shape=1)+
+  geom_smooth(method=lm, se=TRUE) +
+  labs(color='Placement') +
+  theme_bw()
+
+ggplot(data2, aes(x=TypeCounts, y=Duration,colour=PlacementAsY))+
+  geom_jitter(shape=1)+
+  geom_smooth(method=lm, se=TRUE) +
+  labs(color='Placement') +
+  theme_bw()
 
 
 
