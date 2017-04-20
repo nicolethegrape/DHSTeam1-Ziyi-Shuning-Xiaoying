@@ -125,7 +125,7 @@ preCYFIsTrue <- function(x){
     return(FALSE)
   }
 }
-
+library(dplyr)
 calFamilyPreCYF <- function(serviceBAData){
   familyPreCYFData <- serviceBAData %>%
     group_by(CASE_ID) %>%
@@ -173,8 +173,9 @@ calFamilyPlacePostCYF <- function(serviceBAData){
 familyPlacePostCYFData <- calFamilyPlacePostCYF(ServiceBAData)
 # write.csv(familyPlacePostCYFData, "FamilyPlacePostCYFData.csv", row.names=FALSE)
 
-##########################################
+##################################################################
 # get durationAndCloseTimes -----Group2 Jia
+###################################################################
 clientdat<-read.csv("ServiceBAData.csv")
 library("dplyr")
 library("stringi")
@@ -229,9 +230,47 @@ clientdat<-cbind(clientdat,dat$duration)
 case_group<-group_by(dat,CaseID)
 dat2<-summarise(case_group,nClose=max(nClose),Duration=max(duration))
 write.csv(dat2, "DurationAndCloseTimes.csv", row.names=FALSE)
+FamilyDataDeep<-merge(casedat,dat2,by.x="CASE_ID", by.y="CaseID")
+write.csv(FamilyDataDeep,"FamilyDataDeep.csv")
 
 durationAndCloseTimes <- read.csv("DurationAndCloseTimes.csv")
 
+
+## Extra Duration without NA
+
+# 1) last close date
+class(dat$CloseDate)
+# length(which(is.na(dat$CloseDate))) is 2046
+s_close<-strsplit(as.character(dat$CloseDate),split=",")
+s_close<-sapply(s_close,sort)
+s_close[which(s_close=="character(0)")]<-"NA" # 2046 characters have been changed
+
+dat$lastClose<-sapply(s_close, tail, 1)
+# table(dat$lastClose)
+dat$lastClose[dat$lastClose=="NA"]<-"2017-03-01"
+table(dat$lastClose)
+# 2) Client level duration
+dat$AcceptDate<-as.Date(dat$AcceptDate)
+dat$lastClose<-as.Date(dat$lastClose)
+dat$duration2=dat$lastClose-dat$AcceptDate
+
+dat$duration2[which(dat$lastClose=="2017-03-01")]<-NA
+clientdat<-cbind(clientdat,dat$duration2)
+write.csv(clientdat,"ClientLeveldata.csv")
+
+#case level
+case_group<-group_by(dat,CaseID)
+dat2<-summarise(case_group,nClose=max(nClose),Duration2=max(duration))
+FamilyDataDeep<-cbind(FamilyDataDeep,duration2=dat2$Duration2)
+FamilyDataDeep<-select(FamilyDataDeep,-(10:11))
+FamilyDataDeep<-rename(FamilyDataDeep,duration2=dat2.Duration)
+
+#head(FamilyFinalData)
+write.csv(FamilyDataDeep,"FamilyDataDeep.csv",row.names = FALSE)
+
+
+
+########Close time and Duration End ###########################
 
 # merge the X and Y variables  --- Shuning 
 mergeXYVars <- function(xVars, placeAsY, durationAndCloseTimes){
@@ -265,7 +304,9 @@ xVars <- cbind.data.frame(familyPreCYFCatData, typeCountsData)
 CompleteXYData <- mergeXYVars(xVars, familyPlacePostCYFData, durationAndCloseTimes)
 write.csv(CompleteXYData, "CompleteXYData.csv", row.names=FALSE)
 
-### Family Size and number of children
+
+###############Group 2 Deeper Research  --Jia###############
+####### Family Size and number of children #################
 raw<-read.csv("ShortenClientsMerged.csv")
 
 ## Family size
@@ -275,13 +316,13 @@ PeopleinCase<-function(datasetname,groupname){
 }
 
 nFamily<-PeopleinCase(raw,"CaseID")
-deepData<-merge(familyFinalData,nFamily,by.x="CASE_ID",by.y="CaseID",all = TRUE)
+deepData<-merge(FamilyDataDeep,nFamily,by.x="CASE_ID",by.y="CaseID",all = TRUE)
 
 ## number of Children
 nChild<-raw %>%
   group_by(CaseID)%>%
   summarize(nChildren=length(CrossID[Role=="C"]))
-deepData<-merge(deepData,nChild,by.x="CASE_ID",by.y="CaseID")
+deepData<-merge(FamilyDataDeep,nChild,by.x="CASE_ID",by.y="CaseID")
 
 write.csv(deepData,"deepData.csv")
 
@@ -301,16 +342,29 @@ length(which(a$DPW_GA==-1)) #317
 length(which(a$DPW_SSI==-1)) #476
 length(which(a$FSC==-1)) #250
 
+####### Statistics
+mean(deepData$Duration[which(deepData$DPW_FS==1)])
+mean(deepData$CloseTimes[which(deepData$DPW_FS==1)])
+
+group_by(deepData, BasicNeeds) %>%
+  summarise(percent = round(length(which(PlacementAsY == TRUE)) / n() * 100, 1))
+
+mean(deepData$nClients[which(deepData$DPW_FS==1)])
+
+t.test(deepData$Duration~deepData$DPW_FS)
+t.test(deepData$CloseTimes~deepData$DPW_FS)
+t.test(deepData$PlacementAsY~deepData$DPW_TANF)
+
 ##### End #######
 
 
 ####################Part2########################
 #####################ggPlot#####################
-
+################################################3
 
 
 ## Graph1##
-##Duration Days Count##-Zhehan
+##Duration Days Count##-Zhehan Andrew
 DurationDF <- as.data.frame(table(familyFinalData$Duration))
 colnames(DurationDF) <- c("Duration", "Count")
 
@@ -365,6 +419,10 @@ ggplot(serviceTypeCount, aes(Type, Count)) +
 ##Service Type Counts##----Duo
 
 #Distribution of service Type Counts on family level
+library(plotrix)
+library(readr)
+library(RColorBrewer)
+
 dat <- mergedData[,c(grep("CASE_ID", colnames(mergedData)),
                      grep("ACHA_MAX_ACTIVE", colnames(mergedData)),
                      grep("HH_MAX_ACTIVE", colnames(mergedData)),
@@ -399,7 +457,6 @@ piepercent <- round(100*x/sum(x), 1)
 piepercent <-paste(piepercent, "%", sep = "")
 par(mfrow=c(1,1),mar=c(2,1.5,1,0.5),oma=c(2,1.5,1,0.5))
 pie(x, labels = piepercent, radius = 0.8,main="Pie Chart of Service Type Count", col=brewer.pal(9,"Blues"), clockwise = FALSE,
-    
     density = NULL, angle = 45, lty = NULL, border = NULL, edges = 200)
 legend("bottom", legend=c("0", "1", "2", "3", "4", "5", "6", "7", "8"), 
        cex = 0.6, horiz = T, fill =brewer.pal(9,"Blues") )
@@ -522,6 +579,11 @@ ggplot(typeCountsFinalData, aes(x = TypeCounts, fill = PlacementAsY, order = -as
 ## 
 #######Three graphs of closetimes#######Alberto########
 ##
+library(readr)
+library(ggplot2)
+library(dplyr)
+library(plyr)
+
 mu <- ddply(familyFinalData, "Housing", summarise, grp.mean=mean(CloseTimes))
 
 ggplot(familyFinalData, aes(x=CloseTimes, fill=Housing,color=Housing)) + 
@@ -640,7 +702,7 @@ t.test(familyFinalData$Duration~familyFinalData$FSC)
 
 
 #non parametric version 
-wilcox.test(familyFinalData$Duration~FamilyFinalData$Housing) 
+wilcox.test(familyFinalData$Duration~familyFinalData$Housing) 
 
 ###############
 housingmean<-mutate(housingmean,Service="Housing")
